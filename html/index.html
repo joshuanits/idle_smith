@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Hello World!</title>
+    <link rel="stylesheet" href="../node_modules/spectre.css/dist/spectre.min.css">
+    <link rel="stylesheet" href="../node_modules/spectre.css/dist/spectre-icons.min.css">
+
+    <style>
+      .control-bar {
+        background: #f7f8f9;
+        height: 22px;
+      }
+      
+      .control-text {
+        height: 22px;
+        font-size: 12px;
+        position: absolute;
+      }
+
+      .control-bar-buttons {
+        height: inherit;
+        font-size: 0;
+        float: right;
+        width: 22px;
+        display: flex;
+        flex-direction: row-reverse
+      }
+
+      .control-bar-minimize, .control-bar-close {
+        background: #e7e7e7;
+        height: 22px;
+        width: 22px;
+        padding: 2px;
+      }
+
+      .control-bar-minimize:hover {
+        cursor: pointer;
+        background: #455060;
+        color: #e7e7e7;
+      }
+
+      .control-bar-close:hover {
+        cursor: pointer;
+        background: #e85600;
+      }
+
+      .btn-close {
+        width: 18px;
+        height: 18px;
+      }
+
+    </style>
+  </head>
+
+  <body>
+    <div class="control-bar">
+      <span class="label control-text">Idle Smith</span>
+      <div class="control-bar-buttons">
+          <div class="control-bar-close">
+            <i id="close" class="icon icon-cross btn-close"></i>
+          </div>
+        <div class="control-bar-minimize">
+          <i id="minimize" class="icon icon-minus btn-close"></i>
+        </div>
+      </div>
+    </div>
+
+    <h1>Idle Smith</h1>
+    We are using node <script>document.write(process.versions.node)</script>,
+    Chrome <script>document.write(process.versions.chrome)</script>,
+    and Electron <script>document.write(process.versions.electron)</script>.
+  </body>
+
+  <script>
+    require('./index.js')
+  </script>
+</html>

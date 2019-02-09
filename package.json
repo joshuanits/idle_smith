@@ -1,0 +1,31 @@
+{
+  "name": "idle_smith",
+  "version": "1.0.0",
+  "description": "An idle/incremental blacksmithing game.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ ducky11423/idle_smith.git"
+  },
+  "keywords": [
+    "idle",
+    "incremental",
+    "game"
+  ],
+  "author": "Joshua Nitschke",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ducky11423/idle_smith/issues"
+  },
+  "homepage": "https://github.com/ducky11423/idle_smith#readme",
+  "devDependencies": {
+    "electron": "^4.0.4"
+  },
+  "dependencies": {
+    "spectre.css": "^0.5.8"
+  }
+}
