@@ -1,0 +1,44 @@
+.control-bar {
+    background: #f7f8f9;
+    height: 22px;
+    -webkit-app-region: drag;
+}
+
+.control-text {
+    height: 22px;
+    font-size: 12px;
+    position: absolute;
+}
+
+.control-bar-buttons {
+    height: inherit;
+    font-size: 0;
+    float: right;
+    width: 22px;
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.control-bar-minimize, .control-bar-close {
+    background: #e7e7e7;
+    height: 22px;
+    width: 22px;
+    padding: 2px;
+    -webkit-app-region: no-drag;
+}
+
+.control-bar-minimize:hover {
+    cursor: pointer;
+    background: #455060;
+    color: #e7e7e7;
+}
+
+.control-bar-close:hover {
+    cursor: pointer;
+    background: #e85600;
+}
+
+.control-bar-button {
+        width: 18px;
+        height: 18px;
+}
