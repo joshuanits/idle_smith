@@ -10,6 +10,7 @@
       .control-bar {
         background: #f7f8f9;
         height: 22px;
+        -webkit-app-region: drag;
       }
       
       .control-text {
@@ -24,7 +25,7 @@
         float: right;
         width: 22px;
         display: flex;
-        flex-direction: row-reverse
+        flex-direction: row-reverse;
       }
 
       .control-bar-minimize, .control-bar-close {
@@ -32,6 +33,7 @@
         height: 22px;
         width: 22px;
         padding: 2px;
+        -webkit-app-region: no-drag;
       }
 
       .control-bar-minimize:hover {
@@ -45,7 +47,7 @@
         background: #e85600;
       }
 
-      .btn-close {
+      .control-bar-button {
         width: 18px;
         height: 18px;
       }
@@ -57,19 +59,34 @@
     <div class="control-bar">
       <span class="label control-text">Idle Smith</span>
       <div class="control-bar-buttons">
-          <div class="control-bar-close">
-            <i id="close" class="icon icon-cross btn-close"></i>
-          </div>
+        <div class="control-bar-close">
+          <i id="close" class="icon icon-cross control-bar-button"></i>
+        </div>
         <div class="control-bar-minimize">
-          <i id="minimize" class="icon icon-minus btn-close"></i>
+          <i id="maximize" class="icon icon-plus control-bar-button"></i>
+        </div>
+        <div class="control-bar-minimize">
+          <i id="minimize" class="icon icon-minus control-bar-button"></i>
         </div>
       </div>
     </div>
 
     <h1>Idle Smith</h1>
-    We are using node <script>document.write(process.versions.node)</script>,
-    Chrome <script>document.write(process.versions.chrome)</script>,
-    and Electron <script>document.write(process.versions.electron)</script>.
+
+    <h2>Ores</h2>
+    <ul id="ore_list"></ul>
+    <div id="smelting_controls">
+      <span>Smelting: </span>
+      <select class="form-select" id="smelting_select" style="width:auto"></select>
+      <button class="btn" id="smelting_start">Start Smelting</button>
+      <br/>
+      Smelting: <span id="smelting_text"></span>
+      <div class="bar bar-sm" style="margin:4px">
+        <div class="bar-item" id="smelting_bar" role="progressbar" style="width:0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+      </div>
+    </div>
+    <h2>Bars</h2>
+    <ul id="bars_list"></ul>
   </body>
 
   <script>
