@@ -39,6 +39,10 @@
 }
 
 .control-bar-button {
-        width: 18px;
-        height: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+.content {
+    padding: 4px 12px;
 }

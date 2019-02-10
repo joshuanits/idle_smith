@@ -24,22 +24,25 @@
       </div>
     </div>
 
-    <h1>Idle Smith</h1>
-
-    <h2>Ores</h2>
-    <ul id="ore_list"></ul>
-    <div id="smelting_controls">
-      <span>Smelting: </span>
-      <select class="form-select" id="smelting_select" style="width:auto"></select>
-      <button class="btn" id="smelting_start">Start Smelting</button>
-      <br/>
-      Smelting: <span id="smelting_text"></span>
-      <div class="bar bar-sm" style="margin:4px">
-        <div class="bar-item" id="smelting_bar" role="progressbar" style="width:0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    <div class="content">
+      <h1>Idle Smith</h1>
+      Money: <span id="money">0</span> gold pieces.
+      <h2>Ores</h2>
+      <ul id="ore_list"></ul>
+      <div id="smelting_controls">
+        <h2>Smelting</h2>
+        <select class="form-select" id="smelting_select" style="width:auto"></select>
+        <button class="btn" id="smelting_start">Start Smelting</button>
+        <br/>
+        Smelting: <span id="smelting_text"></span>
+        <div class="bar bar-sm" style="margin:4px">
+          <div class="bar-item" id="smelting_bar" role="progressbar" style="width:0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
       </div>
+      <h2>Bars</h2>
+      <ul id="bars_list"></ul>
     </div>
-    <h2>Bars</h2>
-    <ul id="bars_list"></ul>
+    
   </body>
 
   <script>
