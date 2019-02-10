@@ -6,6 +6,7 @@ const Dictionary = require('../Dictionary')
 const dict = new Dictionary()
 
 let orePrices = {}
+
 // close button
 document.getElementById('close').addEventListener('click', () => {
     ipcRenderer.send('quit')
@@ -26,16 +27,34 @@ document.getElementById('smelting_start').addEventListener('click', () => {
     const oreId = oreSelect.children[oreSelect.selectedIndex].getAttribute('data-ore-id')
 
     ipcRenderer.send('smelting_start', oreId, 1)
-    ipcRenderer.send('smelting_start', oreId)
 })
+
+const buyOre = (event) => {
+    const oreId = event.target.getAttribute('data-ore-id')
+    ipcRenderer.send("ores_buy", oreId, 1)
+}
+
+const updateOrePrices = () => {
+    Array.from(document.getElementsByClassName('ore-price')).forEach((element) => {
+        const id = element.parentElement.getAttribute('data-ore-id')
+
+        element.innerHTML = orePrices.hasOwnProperty(id) ? orePrices[id] : 0
+    })
+}
 
 ipcRenderer.on('ores_updated', (e, ores) => {
     // the list of the ores the player has
     const oresList = document.getElementById('ore_list')
     oresList.innerHTML = Object.keys(ores).reduce(function (html, key) {
-        html += `<li>${dict.get(key, 'ore')}: ${ores[key]}</li>`
+        html += `<li>${dict.get(key, 'ore')}: ${ores[key]} <button class="btn buy-ore-button" data-ore-id="${key}">Buy 1 (<span class="ore-price"></span>gp)</button></li>`
         return html
     }, '')
+
+    updateOrePrices()
+
+    Array.from(document.getElementsByClassName('buy-ore-button')).forEach(element => {
+        element.addEventListener('click', buyOre)
+    });
 
     // the ores in the dropdown box for smelting
     var listHtml = Object.keys(ores).reduce(function (html, key) {
@@ -79,4 +98,9 @@ ipcRenderer.on('bars_updated', (e, bars) => {
 ipcRenderer.on('money_updated', (e, money) => {
     const moneySpan = document.getElementById('money')
     moneySpan.innerHTML = money
+})
+
+ipcRenderer.on('ores_price_updated', (e, prices) => {
+    orePrices = prices
+    updateOrePrices()
 })

@@ -5,12 +5,12 @@ const path = require('path')
 
 // todo: make this into an actual thing. for now this works, so thats good enough.
 var data = {
-    money: 0,
+    money: 10,
     xp: 0,
     ores: {
-        bronze: 1,
-        iron: 2,
-        steel: 3,
+        bronze: 0,
+        iron: 0,
+        steel: 0,
     },
     bars: {
         bronze: 0,
@@ -47,6 +47,7 @@ const gameLoop = () => {
     }
 }
 
+// when the player starts smelting
 ipcMain.on('smelting_start', (e, oreId) => {
     if(!data.smelting.active && data.ores[oreId] > 0) {
         data.smelting.active = true
@@ -58,6 +59,30 @@ ipcMain.on('smelting_start', (e, oreId) => {
         mainWindow.send('ores_updated', data.ores)
     }
 })
+
+// buy ores
+ipcMain.on('ores_buy', (e, oreId, buyAmount) => {
+    const orePrice = config.prices.ore[oreId]
+
+    if(data.money >= orePrice * buyAmount) {
+        data.money -= orePrice * buyAmount
+        data.ores[oreId] += buyAmount
+
+        mainWindow.send('money_updated', data.money)
+        mainWindow.send('ores_updated', data.ores)
+    }
+})
+
+const updateAll = () => {
+    mainWindow.send('ores_updated', data.ores)
+    mainWindow.send('bars_updated', data.bars)
+    mainWindow.send('smelting_updated', data.smelting)
+    mainWindow.send('money_updated', data.money)
+    mainWindow.send('ores_price_updated', config.prices.ore)
+}
+
+
+// mostly boring electron stuff
 
 let mainWindow
 
@@ -73,9 +98,7 @@ const createWindow = () => {
     mainWindow.on('ready-to-show', () => {
         //mainWindow.maximize()
         mainWindow.show()
-        mainWindow.send('ores_updated', data.ores)
-        mainWindow.send('bars_updated', data.bars)
-        mainWindow.send('smelting_updated', data.smelting)
+        updateAll()
         setInterval(gameLoop, 10)
     })
 
@@ -86,7 +109,6 @@ const createWindow = () => {
 }
 
 // window functions
-
 app.on('ready', createWindow)
 
 ipcMain.on('quit', () => {
