@@ -75,3 +75,8 @@ ipcRenderer.on('bars_updated', (e, bars) => {
 
     barsList.innerHTML = html
 })
+
+ipcRenderer.on('money_updated', (e, money) => {
+    const moneySpan = document.getElementById('money')
+    moneySpan.innerHTML = money
+})
