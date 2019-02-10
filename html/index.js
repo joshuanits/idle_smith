@@ -1,7 +1,11 @@
 'use strict'
 
 const { ipcRenderer } = require('electron')
+const Dictionary = require('../Dictionary')
 
+const dict = new Dictionary()
+
+console.log(dict.get('bronze_ore'))
 // close button
 document.getElementById('close').addEventListener('click', () => {
     ipcRenderer.send('quit')
@@ -29,14 +33,14 @@ ipcRenderer.on('ores_updated', (e, ores) => {
     // the list of the ores the player has
     const oresList = document.getElementById('ore_list')
     oresList.innerHTML = Object.keys(ores).reduce(function (html, key) {
-        html += `<li>${key}: ${ores[key]}</li>`
+        html += `<li>${dict.get(key, 'ore')}: ${ores[key]}</li>`
         return html
     }, '')
 
     // the ores in the dropdown box for smelting
     var listHtml = Object.keys(ores).reduce(function (html, key) {
         if(ores[key] != 0) {
-            html += `<option data-ore-id="${key}">${key} (${ores[key]})</option>`
+            html += `<option data-ore-id="${key}">${dict.get(key, 'ore')} (${ores[key]})</option>`
         }
         return html
     }, '')
@@ -53,7 +57,7 @@ ipcRenderer.on('ores_updated', (e, ores) => {
 
 ipcRenderer.on('smelting_updated', (e, smelting) => {
     const smeltingText = document.getElementById('smelting_text')
-    smeltingText.innerHTML = smelting.bar || 'Nothing'
+    smeltingText.innerHTML = smelting.bar ? dict.get(smelting.bar, 'bar') : "Nothing"
 
     const smeltingBar = document.getElementById('smelting_bar')
     const barWidth = smelting.progress * 100
@@ -65,7 +69,7 @@ ipcRenderer.on('bars_updated', (e, bars) => {
     const barsList = document.getElementById('bars_list')
 
     var html = Object.keys(bars).reduce(function (html, key) {
-        html += `<li>${key}: ${bars[key]}</li>`
+        html += `<li>${dict.get(key, 'bar')}: ${bars[key]}</li>`
         return html
     }, '')
 
