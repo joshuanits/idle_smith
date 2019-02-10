@@ -8,27 +8,20 @@ const dict = new Dictionary()
 let orePrices = {}
 let unlocked = {}
 
-// close button
-document.getElementById('close').addEventListener('click', () => {
-    ipcRenderer.send('quit')
-})
+const updateSmithingItems = () => {
+    const smithingBarSelect = document.getElementById('smithing_bar_select')
+    const metalId = smithingBarSelect.children[smithingBarSelect.selectedIndex].getAttribute('data-bar-id')
 
-// minimize button
-document.getElementById('minimize').addEventListener('click', () => {
-    ipcRenderer.send('minimize')
-})
-
-// maximize button
-document.getElementById('maximize').addEventListener('click', () => {
-    ipcRenderer.send('toggle_maximize')
-})
-
-document.getElementById('smelting_start').addEventListener('click', () => {
-    const oreSelect = document.getElementById('smelting_select')
-    const oreId = oreSelect.children[oreSelect.selectedIndex].getAttribute('data-ore-id')
-
-    ipcRenderer.send('smelting_start', oreId, 1)
-})
+    if(metalId !== null) {
+        const smithingItemListHtml = Object.keys(unlocked.items[metalId]).reduce(function (html, key) {
+            if(unlocked.items[metalId][key]) html += `<option data-bar-id="${key}">${dict.get(key)}</option>`
+            return html
+        }, '')
+    
+        const smithingItemSelect = document.getElementById('smithing_item_select')
+        smithingItemSelect.innerHTML = smithingItemListHtml || "<option>----</option>"
+    }
+}
 
 const buyOre = (event) => {
     const oreId = event.target.getAttribute('data-ore-id')
@@ -107,7 +100,41 @@ const updateMoney = (money) => {
 
 const updateUnlocked = (unlocks) => {
     unlocked = unlocks
+
+    const smithingBarListHtml = Object.keys(unlocked.metals).reduce(function (html, key) {
+        if(unlocked.metals[key]) html += `<option data-bar-id="${key}">${dict.get(key, 'metal')}</option>`
+        return html
+    }, '')
+
+    const smithingBarSelect = document.getElementById('smithing_bar_select')
+    smithingBarSelect.innerHTML = smithingBarListHtml || "<option>----</option>"
+
+    updateSmithingItems()
 }
+
+// close button
+document.getElementById('close').addEventListener('click', () => {
+    ipcRenderer.send('quit')
+})
+
+// minimize button
+document.getElementById('minimize').addEventListener('click', () => {
+    ipcRenderer.send('minimize')
+})
+
+// maximize button
+document.getElementById('maximize').addEventListener('click', () => {
+    ipcRenderer.send('toggle_maximize')
+})
+
+document.getElementById('smelting_start').addEventListener('click', () => {
+    const oreSelect = document.getElementById('smelting_select')
+    const oreId = oreSelect.children[oreSelect.selectedIndex].getAttribute('data-ore-id')
+
+    ipcRenderer.send('smelting_start', oreId, 1)
+})
+
+document.getElementById('smithing_bar_select').addEventListener('change', updateSmithingItems)
 
 // sent when the number of ores the player has changes
 ipcRenderer.on('ores_updated', (e, ores) => updateOresList(ores))

@@ -28,6 +28,18 @@ var data = {
             bronze: true,
             iron: true,
             steel: false
+        },
+        items: {
+            bronze: {
+                dagger: true,
+                boots: false,
+                hemlet: false,
+            },
+            iron: {
+                dagger: false,
+                boots: false,
+                hemlet: false,
+            }
         }
     }
 }

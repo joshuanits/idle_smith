@@ -1,8 +1,15 @@
 {
     "bronze_ore": "Bronze Ore",
     "bronze_bar": "Bronze Bar",
+    "bronze_metal": "Bronze",
     "iron_ore": "Iron Ore",
     "iron_bar": "Iron Bar",
+    "iron_metal": "Iron",
     "steel_ore": "Steel Ore",
-    "steel_bar": "Steel Bar"
+    "steel_bar": "Steel Bar",
+    "steel_metal": "Steel",
+
+    "dagger": "Dagger",
+    "boots": "Boots",
+    "hemlet": "Helmet"
 }
