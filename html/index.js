@@ -5,7 +5,7 @@ const Dictionary = require('../Dictionary')
 
 const dict = new Dictionary()
 
-console.log(dict.get('bronze_ore'))
+let orePrices = {}
 // close button
 document.getElementById('close').addEventListener('click', () => {
     ipcRenderer.send('quit')
@@ -25,7 +25,7 @@ document.getElementById('smelting_start').addEventListener('click', () => {
     const oreSelect = document.getElementById('smelting_select')
     const oreId = oreSelect.children[oreSelect.selectedIndex].getAttribute('data-ore-id')
 
-    console.log(oreId)
+    ipcRenderer.send('smelting_start', oreId, 1)
     ipcRenderer.send('smelting_start', oreId)
 })
 

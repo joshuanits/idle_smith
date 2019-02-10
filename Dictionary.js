@@ -7,7 +7,6 @@ class Dictionary {
     }
 
     get(id, type) {
-        console.log(id)
         const fullId = id + (type ? `_${type}` : "")
         if(this.dict.hasOwnProperty(fullId)) {
             return this.dict[fullId]
