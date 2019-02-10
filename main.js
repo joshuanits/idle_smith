@@ -22,6 +22,23 @@ var data = {
         bar: '',
         quantity: 0,
         progress: 0
+    },
+    unlocked: {
+        metals: {
+            bronze: true,
+            iron: true,
+            steel: false
+        }
+    }
+}
+
+var config = {
+    prices: {
+        ore: {
+            bronze: 1,
+            iron: 5,
+            steel: 50
+        }
     }
 }
 
@@ -74,13 +91,13 @@ ipcMain.on('ores_buy', (e, oreId, buyAmount) => {
 })
 
 const updateAll = () => {
+    mainWindow.send('unlocked_updated', data.unlocked)
     mainWindow.send('ores_updated', data.ores)
     mainWindow.send('bars_updated', data.bars)
     mainWindow.send('smelting_updated', data.smelting)
     mainWindow.send('money_updated', data.money)
-    mainWindow.send('ores_price_updated', config.prices.ore)
+    mainWindow.send('ores_price_updated', config.prices.ore)  
 }
-
 
 // mostly boring electron stuff
 

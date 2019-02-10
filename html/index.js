@@ -6,6 +6,7 @@ const Dictionary = require('../Dictionary')
 const dict = new Dictionary()
 
 let orePrices = {}
+let unlocked = {}
 
 // close button
 document.getElementById('close').addEventListener('click', () => {
@@ -38,7 +39,8 @@ const updateOresList = (ores) => {
     // the list of the ores the player has
     const oresList = document.getElementById('ore_list')
     oresList.innerHTML = Object.keys(ores).reduce(function (html, key) {
-        html += `<li>${dict.get(key, 'ore')}: ${ores[key]} <button class="btn buy-ore-button" data-ore-id="${key}">Buy 1 (<span class="ore-price"></span>gp)</button></li>`
+        if(unlocked.metals[key])
+            html += `<li>${dict.get(key, 'ore')}: ${ores[key]} <button class="btn buy-ore-button" data-ore-id="${key}">Buy 1 (<span class="ore-price"></span>gp)</button></li>`
         return html
     }, '')
 
@@ -90,7 +92,8 @@ const updateBarsList = (bars) => {
     const barsList = document.getElementById('bars_list')
 
     var html = Object.keys(bars).reduce(function (html, key) {
-        html += `<li>${dict.get(key, 'bar')}: ${bars[key]}</li>`
+        if(unlocked.metals[key])
+            html += `<li>${dict.get(key, 'bar')}: ${bars[key]}</li>`
         return html
     }, '')
 
@@ -100,6 +103,10 @@ const updateBarsList = (bars) => {
 const updateMoney = (money) => {
     const moneySpan = document.getElementById('money')
     moneySpan.innerHTML = money
+}
+
+const updateUnlocked = (unlocks) => {
+    unlocked = unlocks
 }
 
 // sent when the number of ores the player has changes
@@ -116,3 +123,6 @@ ipcRenderer.on('bars_updated', (e, bars) => updateBarsList(bars))
 
 // sent when the players money changes
 ipcRenderer.on('money_updated', (e, money) => updateMoney(money))
+
+// sent whenever the players current unlocks changes 
+ipcRenderer.on('unlocked_updated', (e, unlocked) => updateUnlocked(unlocked))
