@@ -34,15 +34,7 @@ const buyOre = (event) => {
     ipcRenderer.send("ores_buy", oreId, 1)
 }
 
-const updateOrePrices = () => {
-    Array.from(document.getElementsByClassName('ore-price')).forEach((element) => {
-        const id = element.parentElement.getAttribute('data-ore-id')
-
-        element.innerHTML = orePrices.hasOwnProperty(id) ? orePrices[id] : 0
-    })
-}
-
-ipcRenderer.on('ores_updated', (e, ores) => {
+const updateOresList = (ores) => {
     // the list of the ores the player has
     const oresList = document.getElementById('ore_list')
     oresList.innerHTML = Object.keys(ores).reduce(function (html, key) {
@@ -71,10 +63,20 @@ ipcRenderer.on('ores_updated', (e, ores) => {
     // drop down list of ores
     const smeltingSelect = document.getElementById('smelting_select')
     smeltingSelect.innerHTML = listHtml || '<option>None</option>' // if the list was empty, make it say none
+}
 
-})
+const updateOrePrices = (prices) => {
+    // if new prices were supplied set those, if not just update the list
+    if(prices) orePrices = prices
 
-ipcRenderer.on('smelting_updated', (e, smelting) => {
+    Array.from(document.getElementsByClassName('ore-price')).forEach((element) => {
+        const id = element.parentElement.getAttribute('data-ore-id')
+
+        element.innerHTML = orePrices.hasOwnProperty(id) ? orePrices[id] : 0
+    })
+}
+
+const updateSmelting = (smelting) => {
     const smeltingText = document.getElementById('smelting_text')
     smeltingText.innerHTML = smelting.bar ? dict.get(smelting.bar, 'bar') : "Nothing"
 
@@ -82,9 +84,9 @@ ipcRenderer.on('smelting_updated', (e, smelting) => {
     const barWidth = smelting.progress * 100
     smeltingBar.setAttribute('style', `width:${barWidth}%`)
     smeltingBar.setAttribute('aria-valuenow', barWidth)
-})
+}
 
-ipcRenderer.on('bars_updated', (e, bars) => {
+const updateBarsList = (bars) => {
     const barsList = document.getElementById('bars_list')
 
     var html = Object.keys(bars).reduce(function (html, key) {
@@ -93,14 +95,24 @@ ipcRenderer.on('bars_updated', (e, bars) => {
     }, '')
 
     barsList.innerHTML = html
-})
+}
 
-ipcRenderer.on('money_updated', (e, money) => {
+const updateMoney = (money) => {
     const moneySpan = document.getElementById('money')
     moneySpan.innerHTML = money
-})
+}
 
-ipcRenderer.on('ores_price_updated', (e, prices) => {
-    orePrices = prices
-    updateOrePrices()
-})
+// sent when the number of ores the player has changes
+ipcRenderer.on('ores_updated', (e, ores) => updateOresList(ores))
+
+// sent when the price of ores changes
+ipcRenderer.on('ores_price_updated', (e, prices) => updateOrePrices(prices))
+
+// sent every tick while smelting
+ipcRenderer.on('smelting_updated', (e, smelting) => updateSmelting(smelting))
+
+// sent when the number of bars the player has changes
+ipcRenderer.on('bars_updated', (e, bars) => updateBarsList(bars))
+
+// sent when the players money changes
+ipcRenderer.on('money_updated', (e, money) => updateMoney(money))
