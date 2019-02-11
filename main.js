@@ -23,10 +23,17 @@ var data = {
         quantity: 0,
         progress: 0
     },
+    smithing: {
+        active: false,
+        metal: '',
+        item: '',
+        progress: 0,
+        progressPerHit: 0
+    },
     unlocked: {
         metals: {
             bronze: true,
-            iron: true,
+            iron: false,
             steel: false
         },
         items: {
@@ -47,7 +54,20 @@ var data = {
             bronze: 1,
             iron: 5,
             steel: 50
+        },
+        smithing: {
+            dagger: 1,
+            boots: 2,
+            hemlter: 3
         }
+    },
+    items: {
+    }
+}
+
+for(let metal of Object.keys(data.unlocked.items)) {
+    for(let item of Object.keys(data.unlocked.items[metal])) {
+        data.items[`${metal}_${item}`] = 0
     }
 }
 
@@ -66,11 +86,36 @@ const gameLoop = () => {
             data.smelting.quantity = 0
             data.smelting.progress = 0
 
-            mainWindow.send('bars_updated', data.bars)
+            mainWindow.send('bars_updated')
         }
 
-        mainWindow.send('smelting_updated', data.smelting)
+        mainWindow.send('smelting_updated')
     }
+}
+
+const smithingHit = () => {
+    if(data.smithing.active) {
+        data.smithing.progress += data.smithing.progressPerHit
+        if(data.smithing.progress + data.smithing.progressPerHit - 0.000001 >= 1) {
+            addItem(`${data.smithing.metal}_${data.smithing.item}`)
+
+            data.smithing.active = false
+            data.smithing.metal = ''
+            data.smithing.item = ''
+            data.smithing.progress = 0
+            data.smithing.progressPerHit = 0
+
+            mainWindow.send('smithing_finished')
+        }
+
+        mainWindow.send('smithing_updated')
+    }
+}
+
+const addItem = (item) => {
+    data.items[item] += 1
+
+    mainWindow.send('items_updated')
 }
 
 // when the player starts smelting
@@ -82,9 +127,28 @@ ipcMain.on('smelting_start', (e, oreId) => {
 
         data.ores[oreId] -= 1
 
-        mainWindow.send('ores_updated', data.ores)
+        mainWindow.send('ores_updated')
+        mainWindow.send('smelting_updated')
     }
 })
+
+ipcMain.on('smithing_start', (e, metalId, itemId) => {
+    const barCost = data.prices.smithing[itemId]
+
+    if(!data.smithing.active && data.bars[metalId] >= barCost) {
+        data.smithing.active = true
+        data.smithing.metal = metalId
+        data.smithing.item = itemId
+        data.smithing.progressPerHit = 0.1 / barCost // todo: calculate this based on metal?
+
+        data.bars[metalId] -= barCost
+
+        mainWindow.send('bars_updated')
+        mainWindow.send('smithing_updated')
+    }
+})
+
+ipcMain.on('smithing_hit', smithingHit)
 
 // buy ores
 ipcMain.on('ores_buy', (e, oreId, buyAmount) => {
@@ -111,11 +175,12 @@ ipcMain.on('request_data', (e, dataKey) => {
 })
 
 const updateAll = () => {
-    mainWindow.send('smithing_metals_updated', data.unlocked)
+    mainWindow.send('smithing_metals_updated')
     mainWindow.send('ores_updated')
-    mainWindow.send('bars_updated', data.bars)
-    mainWindow.send('smelting_updated', data.smelting)
-    mainWindow.send('money_updated', data.money)
+    mainWindow.send('bars_updated')
+    mainWindow.send('smelting_updated')
+    mainWindow.send('money_updated')
+    mainWindow.send('smithing_updated')
 }
 
 // mostly boring electron stuff
