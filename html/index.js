@@ -146,12 +146,10 @@ const updateSmithingMetals = () => {
 }
 
 const updateItems = () => {
-    console.log("uh yeet")
     const items = ipcRenderer.sendSync('request_data', 'items')
 
     const itemListHtml = Object.keys(items).reduce((html, key) => {
         if(items[key] > 0) {
-            console.log('big yeet')
             const nameParts = key.split('_')
             const metal = dict.get(nameParts[0], 'metal')
             const item = dict.get(nameParts[1])
@@ -160,8 +158,6 @@ const updateItems = () => {
         }
         return html
     }, '')
-
-    console.log(itemListHtml)
 
     const itemList = document.getElementById('item_list')
     itemList.innerHTML = itemListHtml
