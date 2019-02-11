@@ -7,16 +7,8 @@ const path = require('path')
 var data = {
     money: 10,
     xp: 0,
-    ores: {
-        bronze: 0,
-        iron: 0,
-        steel: 0,
-    },
-    bars: {
-        bronze: 0,
-        iron: 0,
-        steel: 0
-    },
+    ores: {},
+    bars: {},
     smelting: {
         active: false,
         bar: '',
@@ -31,23 +23,8 @@ var data = {
         progressPerHit: 0
     },
     unlocked: {
-        metals: {
-            bronze: true,
-            iron: false,
-            steel: false
-        },
-        items: {
-            bronze: {
-                dagger: true,
-                boots: false,
-                hemlet: false,
-            },
-            iron: {
-                dagger: false,
-                boots: false,
-                hemlet: false,
-            }
-        }
+        metals: {},
+        items: {}
     },
     prices: {
         ore: {
@@ -61,15 +38,38 @@ var data = {
             hemlter: 3
         }
     },
-    items: {
-    }
+    items: {}
 }
 
-for(let metal of Object.keys(data.unlocked.items)) {
-    for(let item of Object.keys(data.unlocked.items[metal])) {
+let config = {
+    metals: [
+        'bronze',
+        'iron',
+        'steel'
+    ],
+    items: [
+        'dagger',
+        'boots',
+        'helmets'
+    ]
+}
+
+for(let metal of config.metals) {
+    data.ores[metal] = 0
+    data.bars[metal] = 0
+
+    data.unlocked.metals[metal] = false
+    data.unlocked.items[metal] = {}
+
+    for(let item of config.items) {
+        data.unlocked.items[metal][item] = false
+
         data.items[`${metal}_${item}`] = 0
     }
 }
+
+data.unlocked.metals.bronze = true
+data.unlocked.items.bronze.dagger = true
 
 // main game loop
 const gameLoop = () => {
