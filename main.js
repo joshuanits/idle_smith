@@ -41,10 +41,7 @@ var data = {
                 hemlet: false,
             }
         }
-    }
-}
-
-var config = {
+    },
     prices: {
         ore: {
             bronze: 1,
@@ -91,7 +88,7 @@ ipcMain.on('smelting_start', (e, oreId) => {
 
 // buy ores
 ipcMain.on('ores_buy', (e, oreId, buyAmount) => {
-    const orePrice = config.prices.ore[oreId]
+    const orePrice = data.prices.ore[oreId]
 
     if(data.money >= orePrice * buyAmount) {
         data.money -= orePrice * buyAmount
@@ -102,13 +99,23 @@ ipcMain.on('ores_buy', (e, oreId, buyAmount) => {
     }
 })
 
+ipcMain.on('request_data', (e, dataKey) => {
+    let keys = dataKey.split('.')
+    let currentData = data
+
+    for(let key of keys) {
+        currentData = currentData[key]
+    }
+
+    e.returnValue = currentData
+})
+
 const updateAll = () => {
-    mainWindow.send('unlocked_updated', data.unlocked)
-    mainWindow.send('ores_updated', data.ores)
+    mainWindow.send('smithing_metals_updated', data.unlocked)
+    mainWindow.send('ores_updated')
     mainWindow.send('bars_updated', data.bars)
     mainWindow.send('smelting_updated', data.smelting)
     mainWindow.send('money_updated', data.money)
-    mainWindow.send('ores_price_updated', config.prices.ore)  
 }
 
 // mostly boring electron stuff

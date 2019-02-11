@@ -5,39 +5,24 @@ const Dictionary = require('../Dictionary')
 
 const dict = new Dictionary()
 
-let orePrices = {}
-let unlocked = {}
-
-const updateSmithingItems = () => {
-    const smithingBarSelect = document.getElementById('smithing_bar_select')
-    const metalId = smithingBarSelect.children[smithingBarSelect.selectedIndex].getAttribute('data-bar-id')
-
-    if(metalId !== null) {
-        const smithingItemListHtml = Object.keys(unlocked.items[metalId]).reduce(function (html, key) {
-            if(unlocked.items[metalId][key]) html += `<option data-bar-id="${key}">${dict.get(key)}</option>`
-            return html
-        }, '')
-    
-        const smithingItemSelect = document.getElementById('smithing_item_select')
-        smithingItemSelect.innerHTML = smithingItemListHtml || "<option>----</option>"
-    }
-}
-
 const buyOre = (event) => {
     const oreId = event.target.getAttribute('data-ore-id')
-    ipcRenderer.send("ores_buy", oreId, 1)
+    ipcRenderer.send('ores_buy', oreId, 1)
 }
 
-const updateOresList = (ores) => {
+const updateOresList = () => {
+    // get the players ores from the main process
+    const ores = ipcRenderer.sendSync('request_data', 'ores')
+    const orePrices = ipcRenderer.sendSync('request_data', 'prices.ore')
+    const unlockedMetals = ipcRenderer.sendSync('request_data', 'unlocked.metals')
+
     // the list of the ores the player has
     const oresList = document.getElementById('ore_list')
     oresList.innerHTML = Object.keys(ores).reduce(function (html, key) {
-        if(unlocked.metals[key])
-            html += `<li>${dict.get(key, 'ore')}: ${ores[key]} <button class="btn buy-ore-button" data-ore-id="${key}">Buy 1 (<span class="ore-price"></span>gp)</button></li>`
+        if(unlockedMetals[key])
+            html += `<li>${dict.get(key, 'ore')}: ${ores[key]} <button class="btn buy-ore-button" data-ore-id="${key}">Buy 1 (${orePrices[key]}gp)</button></li>`
         return html
     }, '')
-
-    updateOrePrices()
 
     Array.from(document.getElementsByClassName('buy-ore-button')).forEach(element => {
         element.addEventListener('click', buyOre)
@@ -60,20 +45,11 @@ const updateOresList = (ores) => {
     smeltingSelect.innerHTML = listHtml || '<option>None</option>' // if the list was empty, make it say none
 }
 
-const updateOrePrices = (prices) => {
-    // if new prices were supplied set those, if not just update the list
-    if(prices) orePrices = prices
+const updateSmelting = () => {
+    const smelting = ipcRenderer.sendSync('request_data', 'smelting')
 
-    Array.from(document.getElementsByClassName('ore-price')).forEach((element) => {
-        const id = element.parentElement.getAttribute('data-ore-id')
-
-        element.innerHTML = orePrices.hasOwnProperty(id) ? orePrices[id] : 0
-    })
-}
-
-const updateSmelting = (smelting) => {
     const smeltingText = document.getElementById('smelting_text')
-    smeltingText.innerHTML = smelting.bar ? dict.get(smelting.bar, 'bar') : "Nothing"
+    smeltingText.innerHTML = smelting.bar ? dict.get(smelting.bar, 'bar') : 'Nothing'
 
     const smeltingBar = document.getElementById('smelting_bar')
     const barWidth = smelting.progress * 100
@@ -81,11 +57,14 @@ const updateSmelting = (smelting) => {
     smeltingBar.setAttribute('aria-valuenow', barWidth)
 }
 
-const updateBarsList = (bars) => {
+const updateBarsList = () => {
+    const bars = ipcRenderer.sendSync('request_data', 'bars')
+    const unlockedMetals = ipcRenderer.sendSync('request_data', 'unlocked.metals')
+
     const barsList = document.getElementById('bars_list')
 
     var html = Object.keys(bars).reduce(function (html, key) {
-        if(unlocked.metals[key])
+        if(unlockedMetals[key])
             html += `<li>${dict.get(key, 'bar')}: ${bars[key]}</li>`
         return html
     }, '')
@@ -93,21 +72,40 @@ const updateBarsList = (bars) => {
     barsList.innerHTML = html
 }
 
-const updateMoney = (money) => {
+const updateMoney = () => {
+    const money = ipcRenderer.sendSync('request_data', 'money')
+
     const moneySpan = document.getElementById('money')
     moneySpan.innerHTML = money
 }
 
-const updateUnlocked = (unlocks) => {
-    unlocked = unlocks
+const updateSmithingItems = () => {
+    const smithingBarSelect = document.getElementById('smithing_bar_select')
+    const metalId = smithingBarSelect.children[smithingBarSelect.selectedIndex].getAttribute('data-bar-id')
 
-    const smithingBarListHtml = Object.keys(unlocked.metals).reduce(function (html, key) {
-        if(unlocked.metals[key]) html += `<option data-bar-id="${key}">${dict.get(key, 'metal')}</option>`
+    const unlockedItems = ipcRenderer.sendSync('request_data', `unlocked.items.${metalId}`)
+
+    if(metalId !== null) {
+        const smithingItemListHtml = Object.keys(unlockedItems).reduce(function (html, key) {
+            if(unlockedItems[key]) html += `<option data-bar-id="${key}">${dict.get(key)}</option>`
+            return html
+        }, '')
+    
+        const smithingItemSelect = document.getElementById('smithing_item_select')
+        smithingItemSelect.innerHTML = smithingItemListHtml || '<option>----</option>'
+    }
+}
+
+const updateSmithingMetals = () => {
+    const unlockedMetals = ipcRenderer.sendSync('request_data', 'unlocked.metals')
+
+    const smithingBarListHtml = Object.keys(unlockedMetals).reduce(function (html, key) {
+        if(unlockedMetals[key]) html += `<option data-bar-id="${key}">${dict.get(key, 'metal')}</option>`
         return html
     }, '')
 
     const smithingBarSelect = document.getElementById('smithing_bar_select')
-    smithingBarSelect.innerHTML = smithingBarListHtml || "<option>----</option>"
+    smithingBarSelect.innerHTML = smithingBarListHtml || '<option>----</option>'
 
     updateSmithingItems()
 }
@@ -137,19 +135,16 @@ document.getElementById('smelting_start').addEventListener('click', () => {
 document.getElementById('smithing_bar_select').addEventListener('change', updateSmithingItems)
 
 // sent when the number of ores the player has changes
-ipcRenderer.on('ores_updated', (e, ores) => updateOresList(ores))
-
-// sent when the price of ores changes
-ipcRenderer.on('ores_price_updated', (e, prices) => updateOrePrices(prices))
+ipcRenderer.on('ores_updated', updateOresList)
 
 // sent every tick while smelting
-ipcRenderer.on('smelting_updated', (e, smelting) => updateSmelting(smelting))
+ipcRenderer.on('smelting_updated', updateSmelting)
 
 // sent when the number of bars the player has changes
-ipcRenderer.on('bars_updated', (e, bars) => updateBarsList(bars))
+ipcRenderer.on('bars_updated', updateBarsList)
 
 // sent when the players money changes
-ipcRenderer.on('money_updated', (e, money) => updateMoney(money))
+ipcRenderer.on('money_updated', updateMoney)
 
 // sent whenever the players current unlocks changes 
-ipcRenderer.on('unlocked_updated', (e, unlocked) => updateUnlocked(unlocked))
+ipcRenderer.on('smithing_metals_updated', updateSmithingMetals)
