@@ -5,10 +5,22 @@ const path = require('path')
 
 // todo: make this into an actual thing. for now this works, so thats good enough.
 var data = {
-    money: 10,
-    xp: 0,
-    ores: {},
     bars: {},
+    items: {},
+    money: 10,
+    ores: {},
+    prices: {
+        ore: {
+            bronze: 1,
+            iron: 5,
+            steel: 50
+        },
+        smithing: {
+            dagger: 1,
+            boots: 2,
+            hemlter: 3
+        }
+    },
     smelting: {
         active: false,
         bar: '',
@@ -26,19 +38,7 @@ var data = {
         metals: {},
         items: {}
     },
-    prices: {
-        ore: {
-            bronze: 1,
-            iron: 5,
-            steel: 50
-        },
-        smithing: {
-            dagger: 1,
-            boots: 2,
-            hemlter: 3
-        }
-    },
-    items: {}
+    xp: 0
 }
 
 let config = {
@@ -93,6 +93,54 @@ const gameLoop = () => {
     }
 }
 
+const addItem = (item) => {
+    data.items[item] += 1
+
+    mainWindow.send('items_updated')
+}
+
+const buyOre = (e, oreId, buyAmount) => {
+    const orePrice = data.prices.ore[oreId]
+
+    if(data.money >= orePrice * buyAmount) {
+        data.money -= orePrice * buyAmount
+        data.ores[oreId] += buyAmount
+
+        mainWindow.send('money_updated', data.money)
+        mainWindow.send('ores_updated', data.ores)
+    }
+}
+
+const startSmelting = (e, oreId) => {
+    console.log(oreId)
+    if(!data.smelting.active && data.ores[oreId] > 0) {
+        data.smelting.active = true
+        data.smelting.bar = oreId
+        data.smelting.quantity = 1
+
+        data.ores[oreId] -= 1
+
+        mainWindow.send('ores_updated')
+        mainWindow.send('smelting_updated')
+    }
+}
+
+const startSmithing = (e, metalId, itemId) => {
+    const barCost = data.prices.smithing[itemId]
+
+    if(!data.smithing.active && data.bars[metalId] >= barCost) {
+        data.smithing.active = true
+        data.smithing.metal = metalId
+        data.smithing.item = itemId
+        data.smithing.progressPerHit = 0.1 / barCost // todo: calculate this based on metal?
+
+        data.bars[metalId] -= barCost
+
+        mainWindow.send('bars_updated')
+        mainWindow.send('smithing_updated')
+    }
+}
+
 const smithingHit = () => {
     if(data.smithing.active) {
         data.smithing.progress += data.smithing.progressPerHit
@@ -112,56 +160,15 @@ const smithingHit = () => {
     }
 }
 
-const addItem = (item) => {
-    data.items[item] += 1
-
-    mainWindow.send('items_updated')
-}
+// buy ores
+ipcMain.on('ores_buy', buyOre)
 
 // when the player starts smelting
-ipcMain.on('smelting_start', (e, oreId) => {
-    if(!data.smelting.active && data.ores[oreId] > 0) {
-        data.smelting.active = true
-        data.smelting.bar = oreId
-        data.smelting.quantity = 1
+ipcMain.on('smelting_start', startSmelting)
 
-        data.ores[oreId] -= 1
-
-        mainWindow.send('ores_updated')
-        mainWindow.send('smelting_updated')
-    }
-})
-
-ipcMain.on('smithing_start', (e, metalId, itemId) => {
-    const barCost = data.prices.smithing[itemId]
-
-    if(!data.smithing.active && data.bars[metalId] >= barCost) {
-        data.smithing.active = true
-        data.smithing.metal = metalId
-        data.smithing.item = itemId
-        data.smithing.progressPerHit = 0.1 / barCost // todo: calculate this based on metal?
-
-        data.bars[metalId] -= barCost
-
-        mainWindow.send('bars_updated')
-        mainWindow.send('smithing_updated')
-    }
-})
+ipcMain.on('smithing_start', startSmithing)
 
 ipcMain.on('smithing_hit', smithingHit)
-
-// buy ores
-ipcMain.on('ores_buy', (e, oreId, buyAmount) => {
-    const orePrice = data.prices.ore[oreId]
-
-    if(data.money >= orePrice * buyAmount) {
-        data.money -= orePrice * buyAmount
-        data.ores[oreId] += buyAmount
-
-        mainWindow.send('money_updated', data.money)
-        mainWindow.send('ores_updated', data.ores)
-    }
-})
 
 ipcMain.on('request_data', (e, dataKey) => {
     let keys = dataKey.split('.')
@@ -175,12 +182,12 @@ ipcMain.on('request_data', (e, dataKey) => {
 })
 
 const updateAll = () => {
-    mainWindow.send('smithing_metals_updated')
-    mainWindow.send('ores_updated')
     mainWindow.send('bars_updated')
+    mainWindow.send('ores_updated')
     mainWindow.send('smelting_updated')
     mainWindow.send('money_updated')
     mainWindow.send('smithing_updated')
+    mainWindow.send('smithing_metals_updated')
 }
 
 // mostly boring electron stuff
