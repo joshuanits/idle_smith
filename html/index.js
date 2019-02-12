@@ -10,6 +10,10 @@ const buyOre = (event) => {
     ipcRenderer.send('ores_buy', oreId, 1)
 }
 
+const sellItem = (event) => {
+    const itemId = event.target.parentNode.getAttribute('data-item-id')
+    ipcRenderer.send('item_sell', itemId, 1)
+}
 
 const updateBarsList = () => {
     const bars = ipcRenderer.sendSync('request_data', 'bars')
@@ -34,16 +38,23 @@ const updateItems = () => {
     const itemListHtml = Object.keys(items).reduce((html, key) => {
         if(items[key] > 0) {
             const nameParts = key.split('_')
+
             const metal = dict.get(nameParts[0], 'metal')
             const item = dict.get(nameParts[1])
 
-            html += `<li data-item-id="${key}">${metal} ${item}: ${items[key]}</li>`
+            const itemPrice = ipcRenderer.sendSync('request_item_price', key)
+
+            html += `<li data-item-id="${key}">${metal} ${item}: ${items[key]} <button class="btn btn-sell">Sell for ${itemPrice}gp</button></li>`
         }
         return html
     }, '')
 
     const itemList = document.getElementById('item_list')
     itemList.innerHTML = itemListHtml
+
+    Array.from(document.getElementsByClassName('btn-sell')).forEach(element => {
+        element.addEventListener('click', sellItem)
+    })
 }
 
 const updateMoney = () => {

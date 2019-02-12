@@ -10,6 +10,11 @@ var data = {
     money: 10,
     ores: {},
     prices: {
+        bars: {
+            bronze: 1.5,
+            iron: 7,
+            steel: 60
+        },
         ore: {
             bronze: 1,
             iron: 5,
@@ -111,6 +116,22 @@ const buyOre = (e, oreId, buyAmount) => {
     }
 }
 
+const getItemPrice = (itemId) => {
+    const idParts = itemId.split('_')
+
+    return data.prices.bars[idParts[0]] * data.prices.smithing[idParts[1]]
+}
+
+const sellItem = (e, itemId, quantity) => {
+    if(data.items[itemId] >= quantity) {
+        data.items[itemId] -= quantity
+        data.money += getItemPrice(itemId) * quantity
+
+        mainWindow.send('money_updated')
+        mainWindow.send('items_updated')
+    }
+}
+
 const startSmelting = (e, oreId) => {
     if(!data.smelting.active && data.ores[oreId] > 0) {
         data.smelting.active = true
@@ -159,6 +180,8 @@ const smithingHit = () => {
     }
 }
 
+ipcMain.on('item_sell', sellItem)
+
 // buy ores
 ipcMain.on('ores_buy', buyOre)
 
@@ -180,8 +203,11 @@ ipcMain.on('request_data', (e, dataKey) => {
     e.returnValue = currentData
 })
 
+ipcMain.on('request_item_price', (e, itemId) => e.returnValue = getItemPrice(itemId))
+
 const updateAll = () => {
     mainWindow.send('bars_updated')
+    mainWindow.send('items_updated')
     mainWindow.send('ores_updated')
     mainWindow.send('smelting_updated')
     mainWindow.send('money_updated')
