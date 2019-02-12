@@ -112,7 +112,6 @@ const buyOre = (e, oreId, buyAmount) => {
 }
 
 const startSmelting = (e, oreId) => {
-    console.log(oreId)
     if(!data.smelting.active && data.ores[oreId] > 0) {
         data.smelting.active = true
         data.smelting.bar = oreId
