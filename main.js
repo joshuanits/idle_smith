@@ -7,7 +7,8 @@ const path = require('path')
 var data = {
     bars: {},
     items: {},
-    money: 10,
+    level: 1,
+    money: 1,
     ores: {},
     prices: {
         bars: {
@@ -43,7 +44,7 @@ var data = {
         metals: {},
         items: {}
     },
-    xp: 0
+    xp: 0,
 }
 
 let config = {
@@ -86,6 +87,8 @@ const gameLoop = () => {
             // finish smelting
             data.bars[data.smelting.bar] += data.smelting.quantity
 
+            addXp(Math.round(Math.log(data.prices.ore[data.smelting.bar]) / Math.log(5) + 1))
+
             data.smelting.active = false
             data.smelting.bar = ''
             data.smelting.quantity = 0
@@ -104,6 +107,16 @@ const addItem = (item) => {
     mainWindow.send('items_updated')
 }
 
+const addXp = (xp) => {
+    data.xp += xp
+
+    while(data.xp >= getXpForLevel(data.level + 1)) {
+        data.level += 1;
+    }
+
+    mainWindow.send("xp_updated")
+}
+
 const buyOre = (e, oreId, buyAmount) => {
     const orePrice = data.prices.ore[oreId]
 
@@ -120,6 +133,12 @@ const getItemPrice = (itemId) => {
     const idParts = itemId.split('_')
 
     return data.prices.bars[idParts[0]] * data.prices.smithing[idParts[1]]
+}
+
+// the amount of xp required for a level
+const getXpForLevel = (level) => {
+    const base = 1.15
+    return Math.round(100 * (Math.pow(base, level - 1) - 1))
 }
 
 const sellItem = (e, itemId, quantity) => {
@@ -166,6 +185,7 @@ const smithingHit = () => {
         data.smithing.progress += data.smithing.progressPerHit
         if(data.smithing.progress + data.smithing.progressPerHit - 0.000001 >= 1) {
             addItem(`${data.smithing.metal}_${data.smithing.item}`)
+            addXp(data.prices.ore[data.smithing.metal] * data.prices.smithing[data.smithing.item])
 
             data.smithing.active = false
             data.smithing.metal = ''
@@ -205,6 +225,8 @@ ipcMain.on('request_data', (e, dataKey) => {
 
 ipcMain.on('request_item_price', (e, itemId) => e.returnValue = getItemPrice(itemId))
 
+ipcMain.on('request_level_xp', (e, level) => e.returnValue = getXpForLevel(level))
+
 const updateAll = () => {
     mainWindow.send('bars_updated')
     mainWindow.send('items_updated')
@@ -213,6 +235,7 @@ const updateAll = () => {
     mainWindow.send('money_updated')
     mainWindow.send('smithing_updated')
     mainWindow.send('smithing_metals_updated')
+    mainWindow.send('xp_updated')
 }
 
 // mostly boring electron stuff

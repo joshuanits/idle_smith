@@ -175,6 +175,17 @@ const updateSmithingStartButton = () => {
     smithingStartButton.disabled = barAmount < requiredAmount || requiredAmount === null || smithingActive
 }
 
+const updateXp = () => {
+    const currentXp = ipcRenderer.sendSync('request_data', 'xp')
+    const currentLevel = ipcRenderer.sendSync('request_data', 'level')
+    const currentLevelXp = ipcRenderer.sendSync('request_level_xp', currentLevel)
+    const nextLevelXp = ipcRenderer.sendSync('request_level_xp', currentLevel + 1)
+
+    document.getElementById('current_xp').innerHTML = currentXp - currentLevelXp
+    document.getElementById('current_level').innerHTML = currentLevel
+    document.getElementById('next_level_xp').innerHTML = nextLevelXp - currentLevelXp
+}
+
 // close button
 document.getElementById('close').addEventListener('click', () => ipcRenderer.send('quit'))
 
@@ -230,3 +241,6 @@ ipcRenderer.on('smithing_finished', updateSmithingStartButton)
 
 // sent whenever the players items change
 ipcRenderer.on('items_updated', updateItems)
+
+// sent when the players xp changes
+ipcRenderer.on('xp_updated', updateXp)
