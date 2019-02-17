@@ -69,12 +69,15 @@ const updateOresList = () => {
     const ores = ipcRenderer.sendSync('request_data', 'ores')
     const orePrices = ipcRenderer.sendSync('request_data', 'prices.ore')
     const unlockedMetals = ipcRenderer.sendSync('request_data', 'unlocked.metals')
+    const money = ipcRenderer.sendSync('request_data', 'money')
 
     // the list of the ores the player has
     const oresList = document.getElementById('ore_list')
     oresList.innerHTML = Object.keys(ores).reduce(function (html, key) {
-        if(unlockedMetals[key])
-            html += `<li>${dict.get(key, 'ore')}: ${ores[key]} <button class="btn buy-ore-button" data-ore-id="${key}">Buy 1 (${orePrices[key]}gp)</button></li>`
+        if(unlockedMetals[key]) {
+            const disabled = money >= orePrices[key] ? "" : "disabled"
+            html += `<li>${dict.get(key, 'ore')}: ${ores[key]} <button class="btn buy-ore-button" data-ore-id="${key}" ${disabled}>Buy 1 (${orePrices[key]}gp)</button></li>`
+        }
         return html
     }, '')
 
@@ -229,6 +232,7 @@ ipcRenderer.on('bars_updated', updateBarsList)
 
 // sent when the players money changes
 ipcRenderer.on('money_updated', updateMoney)
+ipcRenderer.on('money_updated', updateOresList) // potentially change it so it only updates the buttons
 
 // sent whenever the players current unlocks changes 
 ipcRenderer.on('smithing_metals_updated', updateSmithingMetals)
