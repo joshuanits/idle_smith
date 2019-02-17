@@ -252,7 +252,7 @@ const createWindow = () => {
     mainWindow.setMovable(true) // since the window is frameless need to make it so we can drag it around
 
     mainWindow.on('ready-to-show', () => {
-        //mainWindow.maximize()
+        mainWindow.maximize()
         mainWindow.show()
         updateAll()
         setInterval(gameLoop, 10)

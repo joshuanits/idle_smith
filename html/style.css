@@ -46,3 +46,47 @@
 .content {
     padding: 4px 12px;
 }
+
+.main-column {
+    display: flex;
+    flex-flow: column;
+    padding: 0px;
+}
+
+.section {
+    padding: 4px;
+    flex: 1;
+    overflow: auto;
+    border: 1px solid grey;
+    margin: 0px;
+}
+
+.container {
+    display: flex;
+    flex-flow: column;
+    height: calc(100% - 50px);   
+}
+
+.title-section {
+    height:64px;
+}
+
+.main-section {
+    flex: 1;
+}
+
+p {
+    margin: 4px;
+}
+
+html, body {
+    height:100%;
+}
+
+.columns, .column {
+    height:100%;
+}
+
+.column {
+    
+}
