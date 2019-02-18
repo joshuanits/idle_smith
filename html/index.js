@@ -17,13 +17,12 @@ const sellItem = (event) => {
 
 const updateBarsList = () => {
     const bars = ipcRenderer.sendSync('request_data', 'bars')
-    const unlockedMetals = ipcRenderer.sendSync('request_data', 'unlocked.metals')
-
     const barsList = document.getElementById('bars_list')
 
     var html = Object.keys(bars).reduce(function (html, key) {
-        if(unlockedMetals[key])
-            html += `<li>${dict.get(key, 'bar')}: ${bars[key]}</li>`
+        const bar = bars[key]
+        if(bar.unlocked)
+            html += `<li>${dict.get(bar.name)}: ${bar.count}</li>`
         return html
     }, '')
 
@@ -36,15 +35,10 @@ const updateItems = () => {
     const items = ipcRenderer.sendSync('request_data', 'items')
 
     const itemListHtml = Object.keys(items).reduce((html, key) => {
-        if(items[key] > 0) {
-            const nameParts = key.split('_')
+        const item = items[key]
 
-            const metal = dict.get(nameParts[0], 'metal')
-            const item = dict.get(nameParts[1])
-
-            const itemPrice = ipcRenderer.sendSync('request_item_price', key)
-
-            html += `<li data-item-id="${key}">${metal} ${item}: ${items[key]} <button class="btn btn-sell">Sell for ${itemPrice}gp</button></li>`
+        if(item.count > 0) {
+            html += `<li data-item-id="${key}">${dict.get(item.name)}: ${item.count} <button class="btn btn-sell">Sell for ${item.price}gp</button></li>`
         }
         return html
     }, '')
@@ -67,16 +61,15 @@ const updateMoney = () => {
 const updateOresList = () => {
     // get the players ores from the main process
     const ores = ipcRenderer.sendSync('request_data', 'ores')
-    const orePrices = ipcRenderer.sendSync('request_data', 'prices.ore')
-    const unlockedMetals = ipcRenderer.sendSync('request_data', 'unlocked.metals')
     const money = ipcRenderer.sendSync('request_data', 'money')
 
     // the list of the ores the player has
     const oresList = document.getElementById('ore_list')
     oresList.innerHTML = Object.keys(ores).reduce(function (html, key) {
-        if(unlockedMetals[key]) {
-            const disabled = money >= orePrices[key] ? "" : "disabled"
-            html += `<li>${dict.get(key, 'ore')}: ${ores[key]} <button class="btn buy-ore-button" data-ore-id="${key}" ${disabled}>Buy 1 (${orePrices[key]}gp)</button></li>`
+        const ore = ores[key]
+        if(ore.unlocked) {
+            const disabled = money >= ore.price ? "" : "disabled"
+            html += `<li>${dict.get(ore.name)}: ${ore.count} <button class="btn buy-ore-button" data-ore-id="${key}" ${disabled}>Buy 1 (${ore.price}gp)</button></li>`
         }
         return html
     }, '')
@@ -87,8 +80,9 @@ const updateOresList = () => {
 
     // the ores in the dropdown box for smelting
     var listHtml = Object.keys(ores).reduce(function (html, key) {
-        if(ores[key] != 0) {
-            html += `<option data-ore-id="${key}">${dict.get(key, 'ore')} (${ores[key]})</option>`
+        const ore = ores[key]
+        if(ore.count != 0) {
+            html += `<option data-ore-id="${key}">${dict.get(ore.name)} (${ore.count})</option>`
         }
         return html
     }, '')
@@ -133,11 +127,12 @@ const updateSmithingItems = () => {
     const smithingBarSelect = document.getElementById('smithing_bar_select')
     const metalId = smithingBarSelect.children[smithingBarSelect.selectedIndex].getAttribute('data-bar-id')
 
-    const unlockedItems = ipcRenderer.sendSync('request_data', `unlocked.items.${metalId}`)
+    const items = ipcRenderer.sendSync('request_data', 'items')
 
     if(metalId !== null) {
-        const smithingItemListHtml = Object.keys(unlockedItems).reduce(function (html, key) {
-            if(unlockedItems[key]) html += `<option data-item-id="${key}">${dict.get(key)}</option>`
+        const smithingItemListHtml = Object.keys(items).reduce(function (html, key) {
+            const item = items[key]
+            if(item.metal == metalId && item.unlocked) html += `<option data-item-id="${key}">${dict.get(item.smithingItem)}</option>`
             return html
         }, '')
     
@@ -149,10 +144,12 @@ const updateSmithingItems = () => {
 }
 
 const updateSmithingMetals = () => {
-    const unlockedMetals = ipcRenderer.sendSync('request_data', 'unlocked.metals')
+    const bars = ipcRenderer.sendSync('request_data', 'bars')
 
-    const smithingBarListHtml = Object.keys(unlockedMetals).reduce(function (html, key) {
-        if(unlockedMetals[key]) html += `<option data-bar-id="${key}">${dict.get(key, 'metal')}</option>`
+    const smithingBarListHtml = Object.keys(bars).reduce(function (html, key) {
+        const bar = bars[key]
+        // TODO: Update the dictionary in this part to work using the name
+        if(bar.unlocked) html += `<option data-bar-id="${key}">${dict.get(key, 'metal')}</option>`
         return html
     }, '')
 
@@ -166,16 +163,24 @@ const updateSmithingStartButton = () => {
     const smithingBarSelect = document.getElementById('smithing_bar_select')
     const metalId = smithingBarSelect.children[smithingBarSelect.selectedIndex].getAttribute('data-bar-id')
 
+    if(!metalId) return
+
     const smithingItemSelect = document.getElementById('smithing_item_select')
     const itemId = smithingItemSelect.children[smithingItemSelect.selectedIndex].getAttribute('data-item-id')
 
-    const barAmount = ipcRenderer.sendSync('request_data', `bars.${metalId}`)
-    const requiredAmount = ipcRenderer.sendSync('request_data', `prices.smithing.${itemId}`)
+    if(!itemId) return
+
+    const barAmount = ipcRenderer.sendSync('request_data', `bars.${metalId}.count`)
+    const requiredAmount = ipcRenderer.sendSync('request_data', `items.${itemId}.barsRequired`)
     const smithingActive = ipcRenderer.sendSync('request_data', `smithing.active`)
 
     const smithingStartButton = document.getElementById('smithing_start')
     smithingStartButton.innerHTML = `Start Smithing ${requiredAmount !== null ? `(${requiredAmount} bar${requiredAmount > 1 ? 's' : ''})` : ''}`
     smithingStartButton.disabled = barAmount < requiredAmount || requiredAmount === null || smithingActive
+}
+
+const updateUpgrades = () => {
+    const upgrades = ipcRenderer.sendSync('request_data', 'upgrades')
 }
 
 const updateXp = () => {
@@ -212,7 +217,7 @@ document.getElementById('smithing_start').addEventListener('click', () => {
     const smithingItemSelect = document.getElementById('smithing_item_select')
     const itemId = smithingItemSelect.children[smithingItemSelect.selectedIndex].getAttribute('data-item-id')
 
-    ipcRenderer.send('smithing_start', metalId, itemId)
+    ipcRenderer.send('smithing_start', itemId)
 })
 
 document.getElementById('smithing_hit').addEventListener('click', () => ipcRenderer.send('smithing_hit'))

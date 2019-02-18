@@ -5,30 +5,132 @@ const path = require('path')
 
 // todo: make this into an actual thing. for now this works, so thats good enough.
 var data = {
-    bars: {},
-    items: {},
+    bars: {
+        bronze: {
+            count: 0,
+            baseSmeltingTime: 1,
+            smeltingTime: 1,
+            price: 1.5,
+            name: '{bronze_bar}',
+            xp: 1,
+            unlocked: true
+        },
+        iron: {
+            count: 0,
+            smeltingTime: 3,
+            price: 15,
+            xp: 3,
+            name: '{iron_bar}',
+            unlocked: false
+        },
+        steel: {
+            count: 0,
+            smeltingTime: 10,
+            price: 80,
+            xp: 10,
+            name: '{steel_bar}',
+            unlocked: false
+        }
+    },
+    items: {
+        bronzeDagger: {
+            count: 0,
+            metal: 'bronze',
+            barsRequired: 1,
+            price: 1.5,
+            name: '{bronze_metal} {dagger}',
+            smithingItem: '{dagger}',
+            unlocked: true,
+            xp: 1,
+            order: 0,
+        },
+        bronzeBoots: {
+            count: 0,
+            metal: 'bronze',
+            barsRequired: 2,
+            price: 3,
+            name: '{bronze_metal} {boots}',
+            smithingItem: '{boots}',
+            unlocked: false,
+            xp: 2,
+            order: 1,
+        },
+        bronzeHelmet: {
+            count: 0,
+            metal: 'bronze',
+            barsRequired: 3,
+            price: 4.5,
+            name: '{bronze_metal} {helmet}',
+            smithingItem: '{helmet}',
+            unlocked: false,
+            xp: 3,
+            order: 2,
+        },
+        bronzeShortsword: {
+            count: 0,
+            metal: 'bronze',
+            barsRequired: 4,
+            price: 6,
+            name: '{bronze_metal} {shortsword}',
+            smithingItem: '{shortsword}',
+            unlocked: false,
+            xp: 4,
+            order: 3,
+        },
+        bronzePlatelegs: {
+            count: 0,
+            metal: 'bronze',
+            barsRequired: 5,
+            price: 7.5,
+            name: '{bronze_metal} {platelegs}',
+            smithingItem: '{platelegs}',
+            unlocked: false,
+            xp: 5,
+            order: 4,
+        },
+        bronzeLongsword: {
+            count: 0,
+            metal: 'bronze',
+            barsRequired: 6,
+            price: 9,
+            name: '{bronze_metal} {longsword}',
+            smithingItem: '{longsword}',
+            unlocked: false,
+            xp: 6,
+            order: 5,
+        },
+        bronzePlatebody: {
+            count: 0,
+            metal: 'bronze',
+            barsRequired: 10,
+            price: 15,
+            name: '{bronze_metal} {platebody}',
+            smithingItem: '{platebody}',
+            unlocked: false,
+            xp: 10,
+            order: 6,
+        }
+    },
     level: 1,
     money: 1,
-    ores: {},
-    prices: {
-        bars: {
-            bronze: 1.5,
-            iron: 7,
-            steel: 60
+    ores: {
+        bronze: {
+            count: 0,
+            price: 1,
+            name: "{bronze_ore}",
+            unlocked: true
         },
-        ore: {
-            bronze: 1,
-            iron: 5,
-            steel: 50
+        iron: {
+            count: 0,
+            price: 10,
+            name: "{iron_ore}",
+            unlocked: false
         },
-        smithing: {
-            dagger: 1,
-            boots: 2,
-            helmet: 3,
-            shortsword: 4,
-            platelegs: 5,
-            longsword: 6,
-            platebody: 7
+        steel: {
+            count: 0,
+            price: 50,
+            name: "{steel_ore}",
+            unlocked: false
         }
     },
     smelting: {
@@ -44,74 +146,50 @@ var data = {
         progress: 0,
         progressPerHit: 0
     },
-    unlocked: {
-        metals: {},
-        items: {}
-    },
     unlocks: {
         1: [
             "metals.bronze",
-            "items.bronze.dagger"
+            "items.bronzeDagger"
         ],
         2: [
-            "items.bronze.boots"
+            "items.bronzeBoots"
         ],
-        3: [],
+        3: [
+            "upgrades.bronzeSmeltingSpeed"
+        ],
         4: [
-            "items.bronze.helmet"
+            "items.bronzeHelmet"
         ],
         5: [],
         6: [],
         7: [
-            "items.bronze.shortsword"
+            "items.bronzeShortsword"
         ],
         8: [],
         9: [
-            "items.bronze.platelegs"
+            "items.bronzePlatelegs"
         ],
         10: [
-            "items.bronze.longsword",
-            "items.bronze.platebody"
+            "items.bronzeLongsword",
+            "items.bronzePlatebody"
         ]
-
-
+    },
+    upgrades: {
+        bronzeSmeltingSpeed: {
+            activate: () => {
+                data.bars.bronze.smeltingTime = data.bars.bronze.baseSmeltingTime * Math.pow(0.75, data.upgrades.bronzeSmeltingSpeed.level)
+            },
+            description: "Reduces the time it takes to smelt bronze by 25% per level.",
+            level: 0,
+            name: "",
+            price: () => {
+               return math.pow(2, data.upgrades.bronzeSmeltingSpeed.level + 1)
+            },
+            unlocked: false,
+        }
     },
     xp: 0,
 }
-
-let config = {
-    metals: [
-        'bronze',
-        'iron',
-        'steel'
-    ],
-    items: [
-        'dagger',
-        'boots',
-        'helmet',
-        'shortsword',
-        'platelegs',
-        'longsword',
-        'platebody'
-    ]
-}
-
-for(let metal of config.metals) {
-    data.ores[metal] = 0
-    data.bars[metal] = 0
-
-    data.unlocked.metals[metal] = false
-    data.unlocked.items[metal] = {}
-
-    for(let item of config.items) {
-        data.unlocked.items[metal][item] = false
-
-        data.items[`${metal}_${item}`] = 0
-    }
-}
-
-data.unlocked.metals.bronze = true
-data.unlocked.items.bronze.dagger = true
 
 // main game loop
 const gameLoop = () => {
@@ -121,9 +199,9 @@ const gameLoop = () => {
         data.smelting.progress += 3 / 100;
         if(data.smelting.progress >= 1) {
             // finish smelting
-            data.bars[data.smelting.bar] += data.smelting.quantity
+            data.bars[data.smelting.bar].count += data.smelting.quantity
 
-            addXp(Math.round(Math.log(data.prices.ore[data.smelting.bar]) / Math.log(5) + 1))
+            addXp(data.bars[data.smelting.bar].xp)
 
             data.smelting.active = false
             data.smelting.bar = ''
@@ -138,7 +216,7 @@ const gameLoop = () => {
 }
 
 const addItem = (item) => {
-    data.items[item] += 1
+    data.items[item].count += 1
 
     mainWindow.send('items_updated')
 }
@@ -154,14 +232,14 @@ const addXp = (xp) => {
 }
 
 const buyOre = (e, oreId, buyAmount) => {
-    const orePrice = data.prices.ore[oreId]
+    const orePrice = data.ores[oreId].price
 
     if(data.money >= orePrice * buyAmount) {
         data.money -= orePrice * buyAmount
-        data.ores[oreId] += buyAmount
+        data.ores[oreId].count += buyAmount
 
-        mainWindow.send('money_updated', data.money)
-        mainWindow.send('ores_updated', data.ores)
+        mainWindow.send('money_updated')
+        mainWindow.send('ores_updated')
     }
 }
 
@@ -169,24 +247,17 @@ const levelUp = () => {
     data.level++
     
     data.unlocks[data.level].forEach((unlock) => {
-        let obj = data.unlocked
+        let obj = data
         let keys = unlock.split('.')
-        let finalKey = keys.splice(keys.length - 1)
 
         for(let key of keys) {
             obj = obj[key]
         }
 
-        obj[finalKey] = true
+        obj.unlocked = true
     })
 
     updateAll()
-}
-
-const getItemPrice = (itemId) => {
-    const idParts = itemId.split('_')
-
-    return data.prices.bars[idParts[0]] * data.prices.smithing[idParts[1]]
 }
 
 // the amount of xp required for a level
@@ -196,9 +267,9 @@ const getXpForLevel = (level) => {
 }
 
 const sellItem = (e, itemId, quantity) => {
-    if(data.items[itemId] >= quantity) {
-        data.items[itemId] -= quantity
-        data.money += getItemPrice(itemId) * quantity
+    if(data.items[itemId].count >= quantity) {
+        data.items[itemId].count -= quantity
+        data.money += data.items[itemId].price * quantity
 
         mainWindow.send('money_updated')
         mainWindow.send('items_updated')
@@ -206,28 +277,29 @@ const sellItem = (e, itemId, quantity) => {
 }
 
 const startSmelting = (e, oreId) => {
-    if(!data.smelting.active && data.ores[oreId] > 0) {
+    if(!data.smelting.active && data.ores[oreId].count > 0) {
         data.smelting.active = true
         data.smelting.bar = oreId
         data.smelting.quantity = 1
 
-        data.ores[oreId] -= 1
+        data.ores[oreId].count -= 1
 
         mainWindow.send('ores_updated')
         mainWindow.send('smelting_updated')
     }
 }
 
-const startSmithing = (e, metalId, itemId) => {
-    const barCost = data.prices.smithing[itemId]
+const startSmithing = (e, itemId) => {
+    const metalId = data.items[itemId].metal
+    const barCost = data.items[itemId].barsRequired
 
-    if(!data.smithing.active && data.bars[metalId] >= barCost) {
+    if(!data.smithing.active && data.bars[metalId].count >= barCost) {
         data.smithing.active = true
         data.smithing.metal = metalId
         data.smithing.item = itemId
         data.smithing.progressPerHit = 0.1 / barCost // todo: calculate this based on metal?
 
-        data.bars[metalId] -= barCost
+        data.bars[metalId].count -= barCost
 
         mainWindow.send('bars_updated')
         mainWindow.send('smithing_updated')
@@ -238,8 +310,8 @@ const smithingHit = () => {
     if(data.smithing.active) {
         data.smithing.progress += data.smithing.progressPerHit * 2
         if(data.smithing.progress + data.smithing.progressPerHit - 0.000001 >= 1) {
-            addItem(`${data.smithing.metal}_${data.smithing.item}`)
-            addXp(data.prices.ore[data.smithing.metal] * data.prices.smithing[data.smithing.item])
+            addItem(data.smithing.item)
+            addXp(data.items[data.smithing.item].xp)
 
             data.smithing.active = false
             data.smithing.metal = ''
@@ -274,10 +346,9 @@ ipcMain.on('request_data', (e, dataKey) => {
         currentData = currentData[key]
     }
 
+    if(dataKey == "items")console.log(currentData)
     e.returnValue = currentData
 })
-
-ipcMain.on('request_item_price', (e, itemId) => e.returnValue = getItemPrice(itemId))
 
 ipcMain.on('request_level_xp', (e, level) => e.returnValue = getXpForLevel(level))
 
@@ -332,4 +403,8 @@ ipcMain.on('minimize', () => {
 ipcMain.on('toggle_maximize', () => {
     if(mainWindow.isMaximized()) mainWindow.unmaximize()
     else mainWindow.maximize()
+})
+
+ipcMain.on('debug_log', (e, message) => {
+    console.log(message || '!')
 })

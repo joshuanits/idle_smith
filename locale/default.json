@@ -11,5 +11,9 @@
 
     "dagger": "Dagger",
     "boots": "Boots",
-    "hemlet": "Helmet"
+    "helmet": "Helmet",
+    "shortsword": "Shortsword",
+    "platelegs": "Platelegs",
+    "longsword": "Longsword",
+    "platebody": "Platebody"
 }
