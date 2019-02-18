@@ -24,7 +24,11 @@ var data = {
         smithing: {
             dagger: 1,
             boots: 2,
-            hemlter: 3
+            helmet: 3,
+            shortsword: 4,
+            platelegs: 5,
+            longsword: 6,
+            platebody: 7
         }
     },
     smelting: {
@@ -44,6 +48,34 @@ var data = {
         metals: {},
         items: {}
     },
+    unlocks: {
+        1: [
+            "metals.bronze",
+            "items.bronze.dagger"
+        ],
+        2: [
+            "items.bronze.boots"
+        ],
+        3: [],
+        4: [
+            "items.bronze.helmet"
+        ],
+        5: [],
+        6: [],
+        7: [
+            "items.bronze.shortsword"
+        ],
+        8: [],
+        9: [
+            "items.bronze.platelegs"
+        ],
+        10: [
+            "items.bronze.longsword",
+            "items.bronze.platebody"
+        ]
+
+
+    },
     xp: 0,
 }
 
@@ -56,7 +88,11 @@ let config = {
     items: [
         'dagger',
         'boots',
-        'helmets'
+        'helmet',
+        'shortsword',
+        'platelegs',
+        'longsword',
+        'platebody'
     ]
 }
 
@@ -111,7 +147,7 @@ const addXp = (xp) => {
     data.xp += xp
 
     while(data.xp >= getXpForLevel(data.level + 1)) {
-        data.level += 1;
+        levelUp()
     }
 
     mainWindow.send("xp_updated")
@@ -127,6 +163,24 @@ const buyOre = (e, oreId, buyAmount) => {
         mainWindow.send('money_updated', data.money)
         mainWindow.send('ores_updated', data.ores)
     }
+}
+
+const levelUp = () => {
+    data.level++
+    
+    data.unlocks[data.level].forEach((unlock) => {
+        let obj = data.unlocked
+        let keys = unlock.split('.')
+        let finalKey = keys.splice(keys.length - 1)
+
+        for(let key of keys) {
+            obj = obj[key]
+        }
+
+        obj[finalKey] = true
+    })
+
+    updateAll()
 }
 
 const getItemPrice = (itemId) => {
@@ -182,7 +236,7 @@ const startSmithing = (e, metalId, itemId) => {
 
 const smithingHit = () => {
     if(data.smithing.active) {
-        data.smithing.progress += data.smithing.progressPerHit
+        data.smithing.progress += data.smithing.progressPerHit * 2
         if(data.smithing.progress + data.smithing.progressPerHit - 0.000001 >= 1) {
             addItem(`${data.smithing.metal}_${data.smithing.item}`)
             addXp(data.prices.ore[data.smithing.metal] * data.prices.smithing[data.smithing.item])
