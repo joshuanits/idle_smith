@@ -346,7 +346,6 @@ ipcMain.on('request_data', (e, dataKey) => {
         currentData = currentData[key]
     }
 
-    if(dataKey == "items")console.log(currentData)
     e.returnValue = currentData
 })
 
