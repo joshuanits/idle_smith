@@ -6,14 +6,24 @@ class Dictionary {
         this.dict = require(`./locale/${dictionaryFile}`)
     }
 
-    get(id, type) {
-        const fullId = id + (type ? `_${type}` : "")
-        if(this.dict.hasOwnProperty(fullId)) {
-            return this.dict[fullId]
-        } else {
-            // couldn't find a localisd string, just spit the id back
-            return fullId
-        }
+    get(name) {
+        let outputString = ''
+        let tempString = ''
+        let buildingTemp = false
+
+        name.split('').forEach(c => {
+            if(!buildingTemp && c == '{') {
+                buildingTemp = true
+            } else if (buildingTemp && c != '}') {
+                tempString += c
+            } else if (buildingTemp && c == "}") {
+                buildingTemp = false
+                outputString += this.dict.hasOwnProperty(tempString) ? this.dict[tempString] : `{${tempString}}`
+                tempString = ""
+            } else {
+                outputString += c
+            }
+        })
     }
 }
 

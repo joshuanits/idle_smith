@@ -98,10 +98,17 @@ const updateOresList = () => {
 
 const updateSmelting = () => {
     const smelting = ipcRenderer.sendSync('request_data', 'smelting')
+    
+    let smeltingText = 'Nothing'
 
-    const smeltingText = document.getElementById('smelting_text')
-    smeltingText.innerHTML = smelting.bar ? dict.get(smelting.bar, 'bar') : 'Nothing'
-
+    if(smelting.active) {
+        const bar = ipcRenderer.sendSync('request_data', `bars.${smelting.bar}`)
+        smeltingText = dict.get(bar.name)
+    }    
+    
+    const smeltingSpan = document.getElementById('smelting_text')
+    smeltingSpan.innerHTML = smeltingText
+    
     const smeltingBar = document.getElementById('smelting_bar')
     const barWidth = smelting.progress * 100
     smeltingBar.setAttribute('style', `width:${barWidth}%`)
@@ -110,9 +117,9 @@ const updateSmelting = () => {
 
 const updateSmithing = () => {
     const smithing = ipcRenderer.sendSync('request_data', 'smithing')
-
+    const item = ipcRenderer.sendSync('request_data', `items.${smithing.item}`)
     const smithingText = document.getElementById('smithing_text')
-    smithingText.innerHTML = smithing.active ? (`${dict.get(smithing.metal, 'metal')} ${dict.get(smithing.item)}`) : 'Nothing'
+    smithingText.innerHTML = smithing.active ? (`${dict.get(item.name)}`) : 'Nothing'
 
     const hitButton = document.getElementById('smithing_hit')
     hitButton.disabled = !smithing.active
