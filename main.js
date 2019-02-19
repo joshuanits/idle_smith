@@ -13,7 +13,8 @@ var data = {
             price: 1.5,
             name: '{bronze_bar}',
             xp: 1,
-            unlocked: true
+            unlocked: true,
+            order: 0
         },
         iron: {
             count: 0,
@@ -21,7 +22,8 @@ var data = {
             price: 15,
             xp: 3,
             name: '{iron_bar}',
-            unlocked: false
+            unlocked: false,
+            order: 1,
         },
         steel: {
             count: 0,
@@ -29,7 +31,8 @@ var data = {
             price: 80,
             xp: 10,
             name: '{steel_bar}',
-            unlocked: false
+            unlocked: false,
+            order: 2
         }
     },
     items: {
@@ -118,19 +121,22 @@ var data = {
             count: 0,
             price: 1,
             name: "{bronze_ore}",
-            unlocked: true
+            unlocked: true,
+            order: 0
         },
         iron: {
             count: 0,
             price: 10,
             name: "{iron_ore}",
-            unlocked: false
+            unlocked: false,
+            order: 1
         },
         steel: {
             count: 0,
             price: 50,
             name: "{steel_ore}",
-            unlocked: false
+            unlocked: false,
+            order: 2
         }
     },
     smelting: {
@@ -187,6 +193,7 @@ var data = {
                return Math.pow(2, data.upgrades.bronzeSmeltingSpeed.level + 1)
             },
             unlocked: false,
+            order: 0
         }
     },
     xp: 0,

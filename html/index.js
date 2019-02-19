@@ -25,8 +25,9 @@ const updateBarsList = () => {
     const bars = ipcRenderer.sendSync('request_data', 'bars')
     const barsList = document.getElementById('bars_list')
 
-    var html = Object.keys(bars).reduce(function (html, key) {
-        const bar = bars[key]
+    var html = Object.entries(bars).sort((a, b) => a[1].order - b[1].order).reduce((html, entry) => {
+        const key = entry[0]
+        const bar = entry[1]
         if(bar.unlocked)
             html += `<li>${dict.get(bar.name)}: ${bar.count}</li>`
         return html
@@ -40,8 +41,9 @@ const updateBarsList = () => {
 const updateItems = () => {
     const items = ipcRenderer.sendSync('request_data', 'items')
 
-    const itemListHtml = Object.keys(items).reduce((html, key) => {
-        const item = items[key]
+    const itemListHtml = Object.entries(items).sort((a, b) => a[1].order - b[1].order).reduce((html, entry) => {
+        const key = entry[0]
+        const item = entry[1]
 
         if(item.count > 0) {
             html += `<li data-item-id="${key}">${dict.get(item.name)}: ${item.count} <button class="btn btn-sell">Sell for ${item.price}gp</button></li>`
@@ -73,8 +75,10 @@ const updateOresList = () => {
 
     // the list of the ores the player has
     const oresList = document.getElementById('ore_list')
-    oresList.innerHTML = Object.keys(ores).reduce(function (html, key) {
-        const ore = ores[key]
+    oresList.innerHTML = Object.entries(ores).sort((a, b) => a[1].order - b[1].order).reduce((html, entry) => {
+        const key = entry[0]
+        const ore = entry[1]
+
         if(ore.unlocked) {
             const disabled = money >= ore.price ? "" : "disabled"
             let buttonsHtml = buyAmounts.reduce((html, i) => {
@@ -153,8 +157,9 @@ const updateSmithingItems = () => {
     const items = ipcRenderer.sendSync('request_data', 'items')
 
     if(metalId !== null) {
-        const smithingItemListHtml = Object.keys(items).reduce(function (html, key) {
-            const item = items[key]
+        const smithingItemListHtml = Object.entries(items).sort((a, b) => a[1].order - b[1].order).reduce((html, entry) => {
+            const key = entry[0]
+            const item = entry[1]
             if(item.metal == metalId && item.unlocked) html += `<option data-item-id="${key}">${dict.get(item.smithingItem)}</option>`
             return html
         }, '')
@@ -169,8 +174,9 @@ const updateSmithingItems = () => {
 const updateSmithingMetals = () => {
     const bars = ipcRenderer.sendSync('request_data', 'bars')
 
-    const smithingBarListHtml = Object.keys(bars).reduce(function (html, key) {
-        const bar = bars[key]
+    const smithingBarListHtml = Object.entries(bars).sort((a, b) => a[1].order - b[1].order).reduce((html, entry) => {
+        const key = entry[0]
+        const bar = entry[1]
         // TODO: Update the dictionary in this part to work using the name
         if(bar.unlocked) html += `<option data-bar-id="${key}">${dict.get(key, 'metal')}</option>`
         return html
@@ -206,8 +212,10 @@ const updateUpgrades = () => {
     const upgrades = ipcRenderer.sendSync('request_data', 'upgrades')
     const money = ipcRenderer.sendSync('request_data', 'money')
 
-    const upgradesHtml = Object.keys(upgrades).reduce((html, key) => {
-        const upgrade = upgrades[key]
+    const upgradesHtml = Object.entries(upgrades).sort((a, b) => a[1].order - b[1].order).reduce((html, entry) => {
+        const key = entry[0]
+        const upgrade = entry[1]
+        
         const price = ipcRenderer.sendSync('request_function', `upgrades.${key}`, 'price')
         if(upgrade.unlocked) {
             const disabled = money >= price ? '' : 'disabled' 
@@ -220,7 +228,6 @@ const updateUpgrades = () => {
     upgradesList.innerHTML = upgradesHtml
 
     Array.from(upgradesList.children).forEach(element => {
-        console.log(element.children[0])
         element.children[0].addEventListener('click', buyUpgrade)
     })
 }
