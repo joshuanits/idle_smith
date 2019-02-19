@@ -204,13 +204,14 @@ const updateSmithingStartButton = () => {
 
 const updateUpgrades = () => {
     const upgrades = ipcRenderer.sendSync('request_data', 'upgrades')
+    const money = ipcRenderer.sendSync('request_data', 'money')
 
     const upgradesHtml = Object.keys(upgrades).reduce((html, key) => {
         const upgrade = upgrades[key]
         const price = ipcRenderer.sendSync('request_function', `upgrades.${key}`, 'price')
         if(upgrade.unlocked) {
-            console.log(upgrade)
-            html += `<li>${upgrade.name} (Level ${upgrade.level}) <button class="btn buy-upgrade-button" data-upgrade-id="${key}">Upgrade (${price}gp)</button><br/><span class="text-primary" style="font-size: 14px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${upgrade.description}</span></li>`
+            const disabled = money >= price ? '' : 'disabled' 
+            html += `<li>${upgrade.name} (Level ${upgrade.level}) <button ${disabled} class="btn buy-upgrade-button" data-upgrade-id="${key}">Upgrade (${price}gp)</button><br/><span class="text-primary" style="font-size: 14px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${upgrade.description}</span></li>`
         }
         return html
     }, "")
@@ -279,6 +280,7 @@ ipcRenderer.on('bars_updated', updateBarsList)
 // sent when the players money changes
 ipcRenderer.on('money_updated', updateMoney)
 ipcRenderer.on('money_updated', updateOresList) // potentially change it so it only updates the buttons
+ipcRenderer.on('money_updated', updateUpgrades) // ^^^
 
 // sent whenever the players current unlocks changes 
 ipcRenderer.on('smithing_metals_updated', updateSmithingMetals)
