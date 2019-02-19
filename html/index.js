@@ -10,6 +10,11 @@ const buyOre = (event) => {
     ipcRenderer.send('ores_buy', oreId, 1)
 }
 
+const buyUpgrade = (event) => {
+    const upgradeId = event.target.getAttribute('data-upgrade-id')
+    ipcRenderer.send('upgrade_buy', upgradeId)
+}
+
 const sellItem = (event) => {
     const itemId = event.target.parentNode.getAttribute('data-item-id')
     ipcRenderer.send('item_sell', itemId, 1)
@@ -110,7 +115,7 @@ const updateSmelting = () => {
     smeltingSpan.innerHTML = smeltingText
     
     const smeltingBar = document.getElementById('smelting_bar')
-    const barWidth = smelting.progress * 100
+    const barWidth = smelting.time / smelting.totalTime * 100
     smeltingBar.setAttribute('style', `width:${barWidth}%`)
     smeltingBar.setAttribute('aria-valuenow', barWidth)
 }
@@ -188,6 +193,24 @@ const updateSmithingStartButton = () => {
 
 const updateUpgrades = () => {
     const upgrades = ipcRenderer.sendSync('request_data', 'upgrades')
+
+    const upgradesHtml = Object.keys(upgrades).reduce((html, key) => {
+        const upgrade = upgrades[key]
+        const price = ipcRenderer.sendSync('request_function', `upgrades.${key}`, 'price')
+        if(upgrade.unlocked) {
+            console.log(upgrade)
+            html += `<li>${upgrade.name} (Level ${upgrade.level}) <button class="btn buy-upgrade-button" data-upgrade-id="${key}">Upgrade (${price}gp)</button><br/><span class="text-primary" style="font-size: 14px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${upgrade.description}</span></li>`
+        }
+        return html
+    }, "")
+
+    const upgradesList = document.getElementById('upgrades_list')
+    upgradesList.innerHTML = upgradesHtml
+
+    Array.from(upgradesList.children).forEach(element => {
+        console.log(element.children[0])
+        element.children[0].addEventListener('click', buyUpgrade)
+    })
 }
 
 const updateXp = () => {
@@ -257,6 +280,8 @@ ipcRenderer.on('smithing_finished', updateSmithingStartButton)
 
 // sent whenever the players items change
 ipcRenderer.on('items_updated', updateItems)
+
+ipcRenderer.on('upgrades_updated', updateUpgrades)
 
 // sent when the players xp changes
 ipcRenderer.on('xp_updated', updateXp)

@@ -137,7 +137,8 @@ var data = {
         active: false,
         bar: '',
         quantity: 0,
-        progress: 0
+        time: 0,
+        totalTime: 0
     },
     smithing: {
         active: false,
@@ -181,9 +182,9 @@ var data = {
             },
             description: "Reduces the time it takes to smelt bronze by 25% per level.",
             level: 0,
-            name: "",
+            name: "Bronze Smelting Speed", //TODO: dict this
             price: () => {
-               return math.pow(2, data.upgrades.bronzeSmeltingSpeed.level + 1)
+               return Math.pow(2, data.upgrades.bronzeSmeltingSpeed.level + 1)
             },
             unlocked: false,
         }
@@ -196,8 +197,8 @@ const gameLoop = () => {
     if(mainWindow === null) return
 
     if(data.smelting.active) {
-        data.smelting.progress += 3 / 100;
-        if(data.smelting.progress >= 1) {
+        data.smelting.time += 0.01;
+        if(data.smelting.time >= data.smelting.totalTime) {
             // finish smelting
             data.bars[data.smelting.bar].count += data.smelting.quantity
 
@@ -206,7 +207,7 @@ const gameLoop = () => {
             data.smelting.active = false
             data.smelting.bar = ''
             data.smelting.quantity = 0
-            data.smelting.progress = 0
+            data.smelting.time = 0
 
             mainWindow.send('bars_updated')
         }
@@ -240,6 +241,20 @@ const buyOre = (e, oreId, buyAmount) => {
 
         mainWindow.send('money_updated')
         mainWindow.send('ores_updated')
+    }
+}
+
+const buyUpgrade = (e, upgradeId) => {
+    const upgradePrice = data.upgrades[upgradeId].price()
+
+    if(data.money >= upgradePrice) {
+        data.money -= upgradePrice
+
+        data.upgrades[upgradeId].level++
+        data.upgrades[upgradeId].activate()
+
+        mainWindow.send('money_updated')
+        mainWindow.send('upgrades_updated')
     }
 }
 
@@ -281,7 +296,7 @@ const startSmelting = (e, oreId) => {
         data.smelting.active = true
         data.smelting.bar = oreId
         data.smelting.quantity = 1
-
+        data.smelting.totalTime = data.bars[oreId].smeltingTime
         data.ores[oreId].count -= 1
 
         mainWindow.send('ores_updated')
@@ -331,6 +346,8 @@ ipcMain.on('item_sell', sellItem)
 // buy ores
 ipcMain.on('ores_buy', buyOre)
 
+ipcMain.on('upgrade_buy', buyUpgrade)
+
 // when the player starts smelting
 ipcMain.on('smelting_start', startSmelting)
 
@@ -351,6 +368,15 @@ ipcMain.on('request_data', (e, dataKey) => {
 
 ipcMain.on('request_level_xp', (e, level) => e.returnValue = getXpForLevel(level))
 
+ipcMain.on('request_function', (e, dataKey, func) => {
+    let currentData = data
+
+    for(let key of dataKey.split(".")) {
+        currentData = currentData[key]
+    }
+    e.returnValue = currentData[func]()
+})
+
 const updateAll = () => {
     mainWindow.send('bars_updated')
     mainWindow.send('items_updated')
@@ -359,6 +385,7 @@ const updateAll = () => {
     mainWindow.send('money_updated')
     mainWindow.send('smithing_updated')
     mainWindow.send('smithing_metals_updated')
+    mainWindow.send('upgrades_updated')
     mainWindow.send('xp_updated')
 }
 
@@ -380,6 +407,7 @@ const createWindow = () => {
         mainWindow.show()
         updateAll()
         setInterval(gameLoop, 10)
+
     })
 
     mainWindow.on('closed', () => {
