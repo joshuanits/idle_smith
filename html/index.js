@@ -165,7 +165,9 @@ const updateSmithingItems = () => {
         }, '')
     
         const smithingItemSelect = document.getElementById('smithing_item_select')
+        const selectedIndex = smithingItemSelect.selectedIndex
         smithingItemSelect.innerHTML = smithingItemListHtml || '<option>----</option>'
+        smithingItemSelect.selectedIndex = selectedIndex
     }
 
     updateSmithingStartButton()
@@ -183,7 +185,9 @@ const updateSmithingMetals = () => {
     }, '')
 
     const smithingBarSelect = document.getElementById('smithing_bar_select')
+    const selectedIndex = smithingBarSelect.selectedIndex
     smithingBarSelect.innerHTML = smithingBarListHtml || '<option>----</option>'
+    smithingBarSelect.selectedIndex = selectedIndex
 
     updateSmithingItems()
 }
