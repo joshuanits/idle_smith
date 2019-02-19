@@ -7,7 +7,8 @@ const dict = new Dictionary()
 
 const buyOre = (event) => {
     const oreId = event.target.getAttribute('data-ore-id')
-    ipcRenderer.send('ores_buy', oreId, 1)
+    const oreAmount = parseInt(event.target.getAttribute('data-ore-amount'))
+    ipcRenderer.send('ores_buy', oreId, oreAmount)
 }
 
 const buyUpgrade = (event) => {
@@ -68,13 +69,23 @@ const updateOresList = () => {
     const ores = ipcRenderer.sendSync('request_data', 'ores')
     const money = ipcRenderer.sendSync('request_data', 'money')
 
+    const buyAmounts = [1, 5, 10, 25, 50, 100]
+
     // the list of the ores the player has
     const oresList = document.getElementById('ore_list')
     oresList.innerHTML = Object.keys(ores).reduce(function (html, key) {
         const ore = ores[key]
         if(ore.unlocked) {
             const disabled = money >= ore.price ? "" : "disabled"
-            html += `<li>${dict.get(ore.name)}: ${ore.count} <button class="btn buy-ore-button" data-ore-id="${key}" ${disabled}>Buy 1 (${ore.price}gp)</button></li>`
+            let buttonsHtml = buyAmounts.reduce((html, i) => {
+                if(money >= ore.price * i || i == 1) {
+                    const disabled = money >= ore.price ? "" : "disabled" // this way the buy 1 is always shown, but disabled if not affordable
+                    html += `<button class="btn buy-ore-button" data-ore-id="${key}" data-ore-amount="${i}" ${disabled}>Buy ${i} (${ore.price * i}gp)</button>`
+                } 
+
+                return html
+            }, '')
+            html += `<li>${dict.get(ore.name)}: ${ore.count} ${buttonsHtml}</li>`
         }
         return html
     }, '')
