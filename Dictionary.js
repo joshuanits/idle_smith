@@ -24,6 +24,8 @@ class Dictionary {
                 outputString += c
             }
         })
+
+        return outputString
     }
 }
 
