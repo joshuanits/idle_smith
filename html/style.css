@@ -57,7 +57,7 @@
     padding: 4px;
     flex: 1;
     overflow: auto;
-    border: 1px solid grey;
+    /*--border: 1px solid grey;*/
     margin: 0px;
 }
 
@@ -87,6 +87,11 @@ html, body {
     height:100%;
 }
 
-.column {
-    
+.divider-vert::before {
+    border-left-color: #000000;
+}
+
+.divider {
+    border-top-color: #000000;
+    opacity: 0.5;
 }
