@@ -145,7 +145,7 @@ const updateSmithing = () => {
     hitButton.disabled = !smithing.active
 
     const smithingBar = document.getElementById('smithing_bar')
-    const barWidth = smithing.progress * 100
+    const barWidth = smithing.displayProgress * 100
     smithingBar.setAttribute('style', `width:${barWidth}%`)
     smithingBar.setAttribute('aria-valuenow', barWidth)
 }

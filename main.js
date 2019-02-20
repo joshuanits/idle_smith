@@ -157,6 +157,7 @@ var data = {
         metal: '',
         item: '',
         progress: 0,
+        displayProgress: 0,
         progressPerHit: 0
     },
     unlocks: {
@@ -241,6 +242,26 @@ const gameLoop = () => {
         }
 
         mainWindow.send('smelting_updated')
+    }
+
+    if(data.smithing.active) {
+        data.smithing.displayProgress += (data.smithing.progress - data.smithing.displayProgress) / 10
+
+        if(1 - data.smithing.displayProgress < 0.001) {
+            addItem(data.smithing.item)
+            addXp(data.items[data.smithing.item].xp)
+
+            data.smithing.active = false
+            data.smithing.metal = ''
+            data.smithing.item = ''
+            data.smithing.progress = 0
+            data.smithing.displayProgress = 0;
+            data.smithing.progressPerHit = 0
+
+            mainWindow.send('smithing_finished')
+        }
+
+        mainWindow.send('smithing_updated')
     }
 }
 
@@ -355,20 +376,6 @@ const startSmithing = (e, itemId) => {
 const smithingHit = () => {
     if(data.smithing.active) {
         data.smithing.progress += data.smithing.progressPerHit * 2
-        if(data.smithing.progress + data.smithing.progressPerHit - 0.000001 >= 1) {
-            addItem(data.smithing.item)
-            addXp(data.items[data.smithing.item].xp)
-
-            data.smithing.active = false
-            data.smithing.metal = ''
-            data.smithing.item = ''
-            data.smithing.progress = 0
-            data.smithing.progressPerHit = 0
-
-            mainWindow.send('smithing_finished')
-        }
-
-        mainWindow.send('smithing_updated')
     }
 }
 
