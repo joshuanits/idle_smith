@@ -10,6 +10,8 @@ var data = {
             count: 0,
             baseSmeltingTime: 1,
             smeltingTime: 1,
+            baseSmeltingAmount: 1,
+            smeltingAmount: 1,
             price: 1.5,
             name: '{bronze_bar}',
             xp: 1,
@@ -19,6 +21,8 @@ var data = {
         iron: {
             count: 0,
             smeltingTime: 3,
+            baseSmeltingAmount: 1,
+            smeltingAmount: 1,
             price: 15,
             xp: 3,
             name: '{iron_bar}',
@@ -28,6 +32,8 @@ var data = {
         steel: {
             count: 0,
             smeltingTime: 10,
+            baseSmeltingAmount: 1,
+            smeltingAmount: 1,
             price: 80,
             xp: 10,
             name: '{steel_bar}',
@@ -167,7 +173,9 @@ var data = {
         4: [
             "items.bronzeHelmet"
         ],
-        5: [],
+        5: [
+            "upgrades.bronzeSmeltingAmount"
+        ],
         6: [],
         7: [
             "items.bronzeShortsword"
@@ -194,6 +202,19 @@ var data = {
             },
             unlocked: false,
             order: 0
+        },
+        bronzeSmeltingAmount: {
+            activate: () => {
+                data.bars.bronze.smeltingAmount = data.bars.bronze.baseSmeltingAmount + data.upgrades.bronzeSmeltingAmount.level
+            },
+            description: "Increases the amount of bronze bars that can be smelted at once by 1 per level.",
+            level: 0,
+            name: "Bronze Smelting Amount", //TODO: dict this
+            price: () => {
+               return Math.pow(4, data.upgrades.bronzeSmeltingAmount.level + 1) / 2
+            },
+            unlocked: false,
+            order: 1
         }
     },
     xp: 0,
@@ -209,7 +230,7 @@ const gameLoop = () => {
             // finish smelting
             data.bars[data.smelting.bar].count += data.smelting.quantity
 
-            addXp(data.bars[data.smelting.bar].xp)
+            addXp(data.bars[data.smelting.bar].xp * data.smelting.quantity)
 
             data.smelting.active = false
             data.smelting.bar = ''
@@ -300,11 +321,14 @@ const sellItem = (e, itemId, quantity) => {
 
 const startSmelting = (e, oreId) => {
     if(!data.smelting.active && data.ores[oreId].count > 0) {
+        const smeltingAmount = Math.min(data.ores[oreId].count, data.bars[oreId].smeltingAmount)
+
         data.smelting.active = true
         data.smelting.bar = oreId
-        data.smelting.quantity = 1
+        data.smelting.quantity = smeltingAmount
         data.smelting.totalTime = data.bars[oreId].smeltingTime
-        data.ores[oreId].count -= 1
+
+        data.ores[oreId].count -= smeltingAmount
 
         mainWindow.send('ores_updated')
         mainWindow.send('smelting_updated')
