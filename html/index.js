@@ -16,6 +16,24 @@ const buyUpgrade = (event) => {
     ipcRenderer.send('upgrade_buy', upgradeId)
 }
 
+const levelUp = () => {
+    const level = ipcRenderer.sendSync('request_data', 'level')
+    const unlocked = ipcRenderer.sendSync('request_data', `unlocks.${level}`)
+    
+    let unlockedHtml = '';
+    if(unlocked.length > 0) {
+        unlockedHtml = '<br/>You unlocked: <ul>' + unlocked.reduce((html, id) => {
+            const name = dict.get(ipcRenderer.sendSync('request_data', `${id}.name`))
+            return html + `<li>${name}</li>`
+        }, '') + '</ul>'
+    }
+
+    const levelUpHtml = `<li>You levelled up to level ${level}!${unlockedHtml}</li>`
+    console.log(levelUpHtml)
+    const levelUpFeed = document.getElementById('level_up_feed')
+    levelUpFeed.innerHTML = levelUpHtml + levelUpFeed.innerHTML
+}
+
 const sellItem = (event) => {
     const itemId = event.target.parentNode.getAttribute('data-item-id')
     ipcRenderer.send('item_sell', itemId, 1)
@@ -287,6 +305,8 @@ ipcRenderer.on('smelting_updated', updateSmelting)
 
 // sent when the number of bars the player has changes
 ipcRenderer.on('bars_updated', updateBarsList)
+
+ipcRenderer.on('level_up', levelUp)
 
 // sent when the players money changes
 ipcRenderer.on('money_updated', updateMoney)

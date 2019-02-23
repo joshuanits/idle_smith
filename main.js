@@ -15,7 +15,7 @@ var data = {
             price: 1.5,
             name: '{bronze_bar}',
             xp: 1,
-            unlocked: true,
+            unlocked: false,
             order: 0
         },
         iron: {
@@ -49,7 +49,7 @@ var data = {
             price: 1.5,
             name: '{bronze_metal} {dagger}',
             smithingItem: '{dagger}',
-            unlocked: true,
+            unlocked: false,
             xp: 1,
             order: 0,
         },
@@ -120,14 +120,14 @@ var data = {
             order: 6,
         }
     },
-    level: 1,
+    level: 0,
     money: 1,
     ores: {
         bronze: {
             count: 0,
             price: 1,
             name: "{bronze_ore}",
-            unlocked: true,
+            unlocked: false,
             order: 0
         },
         iron: {
@@ -162,7 +162,8 @@ var data = {
     },
     unlocks: {
         1: [
-            "metals.bronze",
+            "ores.bronze",
+            "bars.bronze",
             "items.bronzeDagger"
         ],
         2: [
@@ -321,6 +322,8 @@ const levelUp = () => {
         obj.unlocked = true
     })
 
+    mainWindow.send("level_up")
+
     updateAll()
 }
 
@@ -445,6 +448,7 @@ const createWindow = () => {
         mainWindow.show()
         updateAll()
         setInterval(gameLoop, 10)
+        levelUp()
 
     })
 
